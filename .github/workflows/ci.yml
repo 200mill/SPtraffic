@@ -132,18 +132,19 @@ jobs:
     runs-on: self-hosted
     needs: publish
     if: github.event_name == 'push'
+    timeout-minutes: 5
 
     steps:
-      - name: Pull backend image
-        run: docker pull ${{ env.BACKEND_IMAGE }}:latest
-
-      - name: Pull frontend image
-        run: docker pull ${{ env.FRONTEND_IMAGE }}:latest
+      - name: Pull images
+        run: |
+          docker pull --quiet ${{ env.BACKEND_IMAGE }}:latest &
+          docker pull --quiet ${{ env.FRONTEND_IMAGE }}:latest &
+          wait
 
       - name: Restart backend
         run: |
-          docker stop sptraffic-backend-1 || true
-          docker rm   sptraffic-backend-1 || true
+          docker stop --time 3 sptraffic-backend-1 2>/dev/null || true
+          docker rm   sptraffic-backend-1 2>/dev/null || true
           docker run -d --name sptraffic-backend-1 \
             --network sptraffic_internal \
             --env-file ~/sptraffic/.env \
@@ -157,13 +158,18 @@ jobs:
 
       - name: Restart frontend
         run: |
-          docker stop sptraffic-frontend-1 || true
-          docker rm   sptraffic-frontend-1 || true
+          docker stop --time 3 sptraffic-frontend-1 2>/dev/null || true
+          docker rm   sptraffic-frontend-1 2>/dev/null || true
           docker run -d --name sptraffic-frontend-1 \
             --network sptraffic_external \
             -p 3000:80 \
             --restart unless-stopped \
             ${{ env.FRONTEND_IMAGE }}:latest
 
+      - name: Verify health
+        run: |
+          sleep 3
+          curl -sf http://localhost:8080/health || (docker logs sptraffic-backend-1 --tail 20 && exit 1)
+
       - name: Clean up old images
-        run: docker image prune -f
+        run: docker image prune -f --filter "until=1h"
