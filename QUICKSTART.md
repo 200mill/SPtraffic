@@ -27,7 +27,7 @@ You need access to **three services**. Apply for each one:
 
 | Service name | 제공기관 |
 |---|---|
-| 고속버스 운행정보 조회서비스 | 국토교통부 |
+| [고속버스 운행정보 조회서비스](https://www.data.go.kr/data/15098522/openapi.do) | 국토교통부 |
 | 시외버스 운행정보 조회서비스 | 국토교통부 |
 | 철도 운행정보 조회서비스 | 한국철도공사 |
 
