@@ -7,15 +7,22 @@ import (
 	"github.com/sptraffic/backend/internal/domain"
 )
 
-// NOTE: Field names are based on the KORAIL "철도역 정보 조회서비스".
-// Adjust after live API testing.
+// Rail (철도) parsers.
+// Endpoint base: https://apis.data.go.kr/1613000/TrainInfoService
+//
+// Station list:  GET /getStationList
+// Schedule:      GET /getSttnToDirctTrnList  (requires depPlaceNm + arrPlaceNm)
+//
+// NOTE: KORAIL/TAGO TrainInfoService field names below are based on the
+// documented spec. Verify stationCode / stinCode casing and the schedule
+// endpoint name against live responses before running a real ingest.
 
 type railStationItem struct {
-	StationCode string  `json:"stationCode"`
-	StationNm   string  `json:"stationNm"`
-	CityCode    string  `json:"cityCode"`
-	Latitude    float64 `json:"latitude,string"`
-	Longitude   float64 `json:"longitude,string"`
+	StinCode  string  `json:"stinCode"`  // station code (5-digit)
+	StinNm    string  `json:"stinNm"`    // station name
+	LineNm    string  `json:"lineNm"`    // line name (KTX, 무궁화, …)
+	Latitude  float64 `json:"latitude,string"`
+	Longitude float64 `json:"longitude,string"`
 }
 
 // ParseRailStations parses rail station items into Terminal domain objects.
@@ -33,40 +40,41 @@ func ParseRailStations(items json.RawMessage) ([]domain.Terminal, error) {
 		raw.Item = []railStationItem{single.Item}
 	}
 
+	seen := make(map[string]bool)
 	out := make([]domain.Terminal, 0, len(raw.Item))
 	for _, it := range raw.Item {
+		if it.StinCode == "" || seen[it.StinCode] {
+			continue
+		}
+		seen[it.StinCode] = true
 		out = append(out, domain.Terminal{
-			Code:       it.StationCode,
-			Name:       strings.TrimSpace(it.StationNm),
-			Type:       domain.TerminalTypeRail,
-			RegionCode: it.CityCode,
-			Lat:        it.Latitude,
-			Lon:        it.Longitude,
+			Code:      it.StinCode,
+			Name:      strings.TrimSpace(it.StinNm),
+			Type:      domain.TerminalTypeRail,
+			Lat:       it.Latitude,
+			Lon:       it.Longitude,
 		})
 	}
 	return out, nil
 }
 
-// RailSchedule is the parsed form of one train departure.
+// RailSchedule is one departure on a known dep→arr route.
+// The caller already knows DepCode / ArrCode from the query params.
 type RailSchedule struct {
-	DepCode  string
-	ArrCode  string
-	DepMins  int
-	ArrMins  int
-	TrainNo  string
-	TrainNm  string // e.g. "KTX", "무궁화"
+	DepMins int
+	ArrMins int
+	TrainNo string // train number
+	TrainNm string // train grade name: KTX, ITX-새마을, 무궁화, …
 }
 
 type railScheduleItem struct {
-	DepplandTime  string `json:"depplandTime"`  // "HHMM"
-	ArrplandTime  string `json:"arrplandTime"`
-	DepPlaceName  string `json:"depplacename"`
-	ArrPlaceName  string `json:"arrplacename"`
-	TrainNo       string `json:"trainno"`
-	TrainNm       string `json:"traingradename"`
+	DepplandTime  string `json:"depplandTime"`  // "YYYYMMDDHHMM"
+	ArpplandTime  string `json:"arpplandTime"`  // "YYYYMMDDHHMM"
+	TrainNo       string `json:"trainNo"`
+	TrainGradeNm  string `json:"trainGradeNm"` // KTX, ITX-새마을, 무궁화호, …
 }
 
-// ParseRailSchedules parses train schedule items.
+// ParseRailSchedules parses train schedule items for a single dep→arr station pair.
 func ParseRailSchedules(items json.RawMessage) ([]RailSchedule, error) {
 	var raw struct {
 		Item []railScheduleItem `json:"item"`
@@ -83,21 +91,19 @@ func ParseRailSchedules(items json.RawMessage) ([]RailSchedule, error) {
 
 	out := make([]RailSchedule, 0, len(raw.Item))
 	for _, it := range raw.Item {
-		dep, err := hhmm(it.DepplandTime)
+		dep, err := yyyymmddhhmm(it.DepplandTime)
 		if err != nil {
 			continue
 		}
-		arr, err := hhmm(it.ArrplandTime)
+		arr, err := yyyymmddhhmm(it.ArpplandTime)
 		if err != nil {
 			continue
 		}
 		out = append(out, RailSchedule{
-			DepCode: it.DepPlaceName, // station name used as fallback code
-			ArrCode: it.ArrPlaceName,
 			DepMins: dep,
 			ArrMins: arr,
 			TrainNo: it.TrainNo,
-			TrainNm: it.TrainNm,
+			TrainNm: it.TrainGradeNm,
 		})
 	}
 	return out, nil

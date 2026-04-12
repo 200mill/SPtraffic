@@ -55,7 +55,7 @@ func (s *Scheduler) Start() {
 func (s *Scheduler) Stop() { s.c.Stop() }
 
 // RunAll executes a full data refresh: terminals → routes → schedules.
-// It truncates all tables first (routes cascade-deletes schedules).
+// It truncates all tables first (schedules → routes → terminals cascade).
 func (s *Scheduler) RunAll(ctx context.Context) error {
 	log.Println("[ingestion] truncating tables")
 	if err := s.schedRepo.DeleteAll(ctx); err != nil {
@@ -83,30 +83,32 @@ func (s *Scheduler) RunAll(ctx context.Context) error {
 		log.Printf("[ingestion] rail stations error: %v", err)
 	}
 
+	today := time.Now().In(mustLoadKST()).Format("20060102")
+
 	log.Println("[ingestion] fetching express bus schedules")
-	if err := s.fetchExpressBusSchedules(ctx); err != nil {
+	if err := s.fetchExpressBusSchedules(ctx, today); err != nil {
 		log.Printf("[ingestion] express bus schedules error: %v", err)
 	}
 
 	log.Println("[ingestion] fetching intercity bus schedules")
-	if err := s.fetchIntercitySchedules(ctx); err != nil {
+	if err := s.fetchIntercitySchedules(ctx, today); err != nil {
 		log.Printf("[ingestion] intercity bus schedules error: %v", err)
 	}
 
 	log.Println("[ingestion] fetching rail schedules")
-	if err := s.fetchRailSchedules(ctx); err != nil {
+	if err := s.fetchRailSchedules(ctx, today); err != nil {
 		log.Printf("[ingestion] rail schedules error: %v", err)
 	}
 
 	return nil
 }
 
-// --- Express Bus ---
+// ─── Express Bus ─────────────────────────────────────────────────────────────
+// Base URL: https://apis.data.go.kr/1613000/ExpBusInfo
 
 func (s *Scheduler) fetchExpressBusTerminals(ctx context.Context) error {
 	params := url.Values{"numOfRows": {"1000"}, "pageNo": {"1"}}
-	body, err := s.apiClient.Get(ctx,
-		"/B551177/BusSttnInfoInqireService/getSttnList", params)
+	body, err := s.apiClient.Get(ctx, "/1613000/ExpBusInfo/GetExpBusTrminlList", params)
 	if err != nil {
 		return err
 	}
@@ -120,35 +122,92 @@ func (s *Scheduler) fetchExpressBusTerminals(ctx context.Context) error {
 	}
 	for i := range terminals {
 		if err := s.termRepo.Upsert(ctx, &terminals[i]); err != nil {
-			log.Printf("[ingestion] upsert terminal %s: %v", terminals[i].Code, err)
+			log.Printf("[ingestion] upsert express terminal %s: %v", terminals[i].Code, err)
 		}
 	}
 	log.Printf("[ingestion] upserted %d express bus terminals", len(terminals))
 	return nil
 }
 
-func (s *Scheduler) fetchExpressBusSchedules(ctx context.Context) error {
-	// Fetch all terminal pairs — in practice you'd paginate and iterate
-	// across (depTerminalId, arrTerminalId) combinations.
-	// This skeleton fetches the full schedule list; adjust endpoint + params as needed.
-	params := url.Values{"numOfRows": {"1000"}, "pageNo": {"1"}}
-	body, err := s.apiClient.Get(ctx,
-		"/B551177/BusSttnInfoInqireService/getRouteList", params)
+// fetchExpressBusSchedules queries schedules for every terminal-pair combination.
+// The TAGO ExpBusInfo API requires both depTerminalId and arrTerminalId, so we
+// iterate all pairs. Korea has ~30–50 express bus terminals, making this feasible.
+func (s *Scheduler) fetchExpressBusSchedules(ctx context.Context, today string) error {
+	// Load all express bus terminals that were just inserted
+	allTerminals, err := s.termRepo.FindAll(ctx)
 	if err != nil {
 		return err
 	}
-	resp, err := client.Parse(body)
-	if err != nil {
-		return err
+	var busTerminals []domain.Terminal
+	for _, t := range allTerminals {
+		if t.Type == domain.TerminalTypeBus {
+			busTerminals = append(busTerminals, t)
+		}
 	}
-	schedules, err := parser.ParseExpressBusSchedules(resp.Response.Body.Items)
-	if err != nil {
-		return err
+
+	total := 0
+	for _, dep := range busTerminals {
+		for _, arr := range busTerminals {
+			if dep.ID == arr.ID {
+				continue
+			}
+			params := url.Values{
+				"depTerminalId": {dep.Code},
+				"arrTerminalId": {arr.Code},
+				"depPlandTime":  {today},
+				"numOfRows":     {"100"},
+				"pageNo":        {"1"},
+			}
+			body, err := s.apiClient.Get(ctx,
+				"/1613000/ExpBusInfo/GetStrtpntAlocFndExpbusInfo", params)
+			if err != nil {
+				continue
+			}
+			resp, err := client.Parse(body)
+			if err != nil {
+				continue // no routes for this pair — normal
+			}
+			schedules, err := parser.ParseExpressBusSchedules(resp.Response.Body.Items)
+			if err != nil || len(schedules) == 0 {
+				continue
+			}
+
+			// Use the grade (operator) from the first schedule as the route's operator.
+			routeOperator := ""
+			if len(schedules) > 0 {
+				routeOperator = schedules[0].Operator
+			}
+			routeID, err := s.routeRepo.Insert(ctx, &domain.Route{
+				Type:     domain.RouteTypeExpress,
+				OriginID: dep.ID,
+				DestID:   arr.ID,
+				Operator: routeOperator,
+			})
+			if err != nil {
+				continue
+			}
+			for _, sc := range schedules {
+				dur := sc.ArrMins - sc.DepMins
+				if dur < 0 {
+					dur += 24 * 60
+				}
+				_ = s.schedRepo.Insert(ctx, &domain.Schedule{
+					RouteID:       routeID,
+					DepartureMins: sc.DepMins,
+					ArrivalMins:   sc.ArrMins,
+					DurationMin:   dur,
+					DaysOfWeek:    127, // all days
+				})
+			}
+			total += len(schedules)
+		}
 	}
-	return s.saveSchedules(ctx, schedules, domain.RouteTypeExpress)
+	log.Printf("[ingestion] inserted %d express bus schedules", total)
+	return nil
 }
 
-// --- Intercity Bus ---
+// ─── Intercity Bus ────────────────────────────────────────────────────────────
+// Base URL: https://apis.data.go.kr/1613000/SuburbsBusInfoService
 
 func (s *Scheduler) fetchIntercityTerminals(ctx context.Context) error {
 	params := url.Values{"numOfRows": {"1000"}, "pageNo": {"1"}}
@@ -167,32 +226,93 @@ func (s *Scheduler) fetchIntercityTerminals(ctx context.Context) error {
 	}
 	for i := range terminals {
 		if err := s.termRepo.Upsert(ctx, &terminals[i]); err != nil {
-			log.Printf("[ingestion] upsert terminal %s: %v", terminals[i].Code, err)
+			log.Printf("[ingestion] upsert intercity terminal %s: %v", terminals[i].Code, err)
 		}
 	}
 	log.Printf("[ingestion] upserted %d intercity bus terminals", len(terminals))
 	return nil
 }
 
-func (s *Scheduler) fetchIntercitySchedules(ctx context.Context) error {
-	params := url.Values{"numOfRows": {"1000"}, "pageNo": {"1"}}
-	body, err := s.apiClient.Get(ctx,
-		"/1613000/SuburbsBusInfoService/getRouteList", params)
+// fetchIntercitySchedules iterates terminal pairs for the intercity bus API.
+// Like the express bus API, getAlocFndSuberbsBusInfo requires both dep+arr IDs.
+func (s *Scheduler) fetchIntercitySchedules(ctx context.Context, today string) error {
+	allTerminals, err := s.termRepo.FindAll(ctx)
 	if err != nil {
 		return err
 	}
-	resp, err := client.Parse(body)
-	if err != nil {
-		return err
+	var busTerminals []domain.Terminal
+	for _, t := range allTerminals {
+		if t.Type == domain.TerminalTypeBus {
+			busTerminals = append(busTerminals, t)
+		}
 	}
-	schedules, err := parser.ParseIntercitySchedules(resp.Response.Body.Items)
-	if err != nil {
-		return err
+
+	total := 0
+	for _, dep := range busTerminals {
+		for _, arr := range busTerminals {
+			if dep.ID == arr.ID {
+				continue
+			}
+			params := url.Values{
+				"depTerminalId": {dep.Code},
+				"arrTerminalId": {arr.Code},
+				"depPlandTime":  {today},
+				"numOfRows":     {"100"},
+				"pageNo":        {"1"},
+			}
+			body, err := s.apiClient.Get(ctx,
+				"/1613000/SuburbsBusInfoService/getAlocFndSuberbsBusInfo", params)
+			if err != nil {
+				continue
+			}
+			resp, err := client.Parse(body)
+			if err != nil {
+				continue
+			}
+			schedules, err := parser.ParseIntercitySchedules(resp.Response.Body.Items)
+			if err != nil || len(schedules) == 0 {
+				continue
+			}
+
+			routeOperator := ""
+			if len(schedules) > 0 {
+				routeOperator = schedules[0].Operator
+			}
+			routeID, err := s.routeRepo.Insert(ctx, &domain.Route{
+				Type:     domain.RouteTypeIntercity,
+				OriginID: dep.ID,
+				DestID:   arr.ID,
+				Operator: routeOperator,
+			})
+			if err != nil {
+				continue
+			}
+			for _, sc := range schedules {
+				dur := sc.ArrMins - sc.DepMins
+				if dur < 0 {
+					dur += 24 * 60
+				}
+				_ = s.schedRepo.Insert(ctx, &domain.Schedule{
+					RouteID:       routeID,
+					DepartureMins: sc.DepMins,
+					ArrivalMins:   sc.ArrMins,
+					DurationMin:   dur,
+					DaysOfWeek:    127,
+				})
+			}
+			total += len(schedules)
+		}
 	}
-	return s.saveIntercitySchedules(ctx, schedules)
+	log.Printf("[ingestion] inserted %d intercity bus schedules", total)
+	return nil
 }
 
-// --- Rail ---
+// ─── Rail ─────────────────────────────────────────────────────────────────────
+// Base URL: https://apis.data.go.kr/1613000/TrainInfoService
+//
+// NOTE: The KORAIL/TAGO TrainInfoService endpoint and field names below need
+// verification against a live API response. The schedule endpoint
+// getSttnToDirctTrnList may require different parameter names.
 
 func (s *Scheduler) fetchRailStations(ctx context.Context) error {
 	params := url.Values{"numOfRows": {"1000"}, "pageNo": {"1"}}
@@ -218,127 +338,72 @@ func (s *Scheduler) fetchRailStations(ctx context.Context) error {
 	return nil
 }
 
-func (s *Scheduler) fetchRailSchedules(ctx context.Context) error {
-	params := url.Values{"numOfRows": {"1000"}, "pageNo": {"1"}}
-	body, err := s.apiClient.Get(ctx,
-		"/1613000/TrainInfoService/getTrainStationList", params)
+func (s *Scheduler) fetchRailSchedules(ctx context.Context, today string) error {
+	allTerminals, err := s.termRepo.FindAll(ctx)
 	if err != nil {
 		return err
 	}
-	resp, err := client.Parse(body)
-	if err != nil {
-		return err
+	var railStations []domain.Terminal
+	for _, t := range allTerminals {
+		if t.Type == domain.TerminalTypeRail {
+			railStations = append(railStations, t)
+		}
 	}
-	schedules, err := parser.ParseRailSchedules(resp.Response.Body.Items)
-	if err != nil {
-		return err
-	}
-	return s.saveRailSchedules(ctx, schedules)
-}
 
-// --- Helpers ---
+	total := 0
+	for _, dep := range railStations {
+		for _, arr := range railStations {
+			if dep.ID == arr.ID {
+				continue
+			}
+			params := url.Values{
+				"depPlaceNm":   {dep.Name},
+				"arrPlaceNm":   {arr.Name},
+				"depPlandTime": {today},
+				"numOfRows":    {"100"},
+				"pageNo":       {"1"},
+			}
+			body, err := s.apiClient.Get(ctx,
+				"/1613000/TrainInfoService/getSttnToDirctTrnList", params)
+			if err != nil {
+				continue
+			}
+			resp, err := client.Parse(body)
+			if err != nil {
+				continue
+			}
+			schedules, err := parser.ParseRailSchedules(resp.Response.Body.Items)
+			if err != nil || len(schedules) == 0 {
+				continue
+			}
 
-// saveSchedules persists express-bus (parser.ExpressBusSchedule) records.
-func (s *Scheduler) saveSchedules(ctx context.Context, schedules []parser.ExpressBusSchedule, rType domain.RouteType) error {
-	for _, sc := range schedules {
-		dep, err := s.termRepo.FindByCode(ctx, sc.DepCode)
-		if err != nil {
-			continue
+			for _, sc := range schedules {
+				routeID, err := s.routeRepo.Insert(ctx, &domain.Route{
+					Code:     sc.TrainNo,
+					Type:     domain.RouteTypeRail,
+					OriginID: dep.ID,
+					DestID:   arr.ID,
+					Operator: sc.TrainNm,
+				})
+				if err != nil {
+					continue
+				}
+				dur := sc.ArrMins - sc.DepMins
+				if dur < 0 {
+					dur += 24 * 60
+				}
+				_ = s.schedRepo.Insert(ctx, &domain.Schedule{
+					RouteID:       routeID,
+					DepartureMins: sc.DepMins,
+					ArrivalMins:   sc.ArrMins,
+					DurationMin:   dur,
+					DaysOfWeek:    127,
+				})
+			}
+			total += len(schedules)
 		}
-		arr, err := s.termRepo.FindByCode(ctx, sc.ArrCode)
-		if err != nil {
-			continue
-		}
-		routeID, err := s.routeRepo.Insert(ctx, &domain.Route{
-			Type:     rType,
-			OriginID: dep.ID,
-			DestID:   arr.ID,
-			Operator: sc.Operator,
-		})
-		if err != nil {
-			continue
-		}
-		dur := sc.ArrMins - sc.DepMins
-		if dur < 0 {
-			dur += 24 * 60 // overnight
-		}
-		_ = s.schedRepo.Insert(ctx, &domain.Schedule{
-			RouteID:       routeID,
-			DepartureMins: sc.DepMins,
-			ArrivalMins:   sc.ArrMins,
-			DurationMin:   dur,
-			DaysOfWeek:    127,
-		})
 	}
-	return nil
-}
-
-func (s *Scheduler) saveIntercitySchedules(ctx context.Context, schedules []parser.IntercitySchedule) error {
-	for _, sc := range schedules {
-		dep, err := s.termRepo.FindByCode(ctx, sc.DepCode)
-		if err != nil {
-			continue
-		}
-		arr, err := s.termRepo.FindByCode(ctx, sc.ArrCode)
-		if err != nil {
-			continue
-		}
-		routeID, err := s.routeRepo.Insert(ctx, &domain.Route{
-			Type:     domain.RouteTypeIntercity,
-			OriginID: dep.ID,
-			DestID:   arr.ID,
-			Operator: sc.Operator,
-		})
-		if err != nil {
-			continue
-		}
-		dur := sc.ArrMins - sc.DepMins
-		if dur < 0 {
-			dur += 24 * 60
-		}
-		_ = s.schedRepo.Insert(ctx, &domain.Schedule{
-			RouteID:       routeID,
-			DepartureMins: sc.DepMins,
-			ArrivalMins:   sc.ArrMins,
-			DurationMin:   dur,
-			DaysOfWeek:    127,
-		})
-	}
-	return nil
-}
-
-func (s *Scheduler) saveRailSchedules(ctx context.Context, schedules []parser.RailSchedule) error {
-	for _, sc := range schedules {
-		dep, err := s.termRepo.FindByCode(ctx, sc.DepCode)
-		if err != nil {
-			continue
-		}
-		arr, err := s.termRepo.FindByCode(ctx, sc.ArrCode)
-		if err != nil {
-			continue
-		}
-		routeID, err := s.routeRepo.Insert(ctx, &domain.Route{
-			Code:     sc.TrainNo,
-			Type:     domain.RouteTypeRail,
-			OriginID: dep.ID,
-			DestID:   arr.ID,
-			Operator: sc.TrainNm,
-		})
-		if err != nil {
-			continue
-		}
-		dur := sc.ArrMins - sc.DepMins
-		if dur < 0 {
-			dur += 24 * 60
-		}
-		_ = s.schedRepo.Insert(ctx, &domain.Schedule{
-			RouteID:       routeID,
-			DepartureMins: sc.DepMins,
-			ArrivalMins:   sc.ArrMins,
-			DurationMin:   dur,
-			DaysOfWeek:    127,
-		})
-	}
+	log.Printf("[ingestion] inserted %d rail schedules", total)
 	return nil
 }
 

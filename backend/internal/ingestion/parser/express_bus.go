@@ -1,8 +1,4 @@
 // Package parser converts raw data.go.kr API responses into domain objects.
-//
-// NOTE: The exact field names below are based on the documented spec of the
-// "고속버스 운행정보 조회서비스" (BusSttnInfoInqireService).
-// Verify and adjust after obtaining a real API key and testing live responses.
 package parser
 
 import (
@@ -13,15 +9,14 @@ import (
 )
 
 // --- Express Bus Terminal ---
+// Endpoint: GET https://apis.data.go.kr/1613000/ExpBusInfo/GetExpBusTrminlList
+// Confirmed response fields: terminalId, terminalNm
+// Note: API does not return coordinates. Lat/Lon are left as 0 and must be
+// enriched separately if map markers are needed.
 
 type expressBusTerminalItem struct {
-	TerminalID   string  `json:"terminalId"`
-	TerminalNm   string  `json:"terminalNm"`
-	CityCode     string  `json:"cityCode"`
-	CityNm       string  `json:"cityNm"`
-	Do           string  `json:"do"`           // 도/광역시 명
-	Lat          float64 `json:"lat,string"`
-	Lng          float64 `json:"lng,string"`
+	TerminalID string `json:"terminalId"`
+	TerminalNm string `json:"terminalNm"`
 }
 
 // ParseExpressBusTerminals converts the raw items JSON into Terminal domain objects.
@@ -42,39 +37,76 @@ func ParseExpressBusTerminals(items json.RawMessage) ([]domain.Terminal, error) 
 
 	out := make([]domain.Terminal, 0, len(raw.Item))
 	for _, it := range raw.Item {
+		if it.TerminalID == "" {
+			continue
+		}
 		out = append(out, domain.Terminal{
-			Code:       it.TerminalID,
-			Name:       strings.TrimSpace(it.TerminalNm),
-			Type:       domain.TerminalTypeBus,
-			RegionCode: it.CityCode,
-			Lat:        it.Lat,
-			Lon:        it.Lng,
+			Code: it.TerminalID,
+			Name: strings.TrimSpace(it.TerminalNm),
+			Type: domain.TerminalTypeBus,
 		})
 	}
 	return out, nil
 }
 
+// --- Express Bus City Code ---
+// Endpoint: GET https://apis.data.go.kr/1613000/ExpBusInfo/GetCtyCodeList
+// Response fields: cityCode, cityName
+
+type expressBusCityItem struct {
+	CityCode string `json:"cityCode"`
+	CityName string `json:"cityName"`
+}
+
+// CityCode maps a cityCode to its name.
+type CityCode struct {
+	Code string
+	Name string
+}
+
+// ParseExpressBusCityCodes parses city code list items.
+func ParseExpressBusCityCodes(items json.RawMessage) ([]CityCode, error) {
+	var raw struct {
+		Item []expressBusCityItem `json:"item"`
+	}
+	if err := json.Unmarshal(items, &raw); err != nil {
+		var single struct {
+			Item expressBusCityItem `json:"item"`
+		}
+		if err2 := json.Unmarshal(items, &single); err2 != nil {
+			return nil, err
+		}
+		raw.Item = []expressBusCityItem{single.Item}
+	}
+
+	out := make([]CityCode, 0, len(raw.Item))
+	for _, it := range raw.Item {
+		out = append(out, CityCode{Code: it.CityCode, Name: it.CityName})
+	}
+	return out, nil
+}
+
 // --- Express Bus Schedule ---
+// Endpoint: GET https://apis.data.go.kr/1613000/ExpBusInfo/GetStrtpntAlocFndExpbusInfo
+// Required params: depTerminalId, arrTerminalId
+// Confirmed response fields: routeId, depPlaceNm, arrPlaceNm,
+//   depPlandTime (YYYYMMDDHHMM), arrPlandTime (YYYYMMDDHHMM), gradeNm, charge
 
 type expressBusScheduleItem struct {
-	DepTerminalID string `json:"depTerminalId"`
-	ArrTerminalID string `json:"arrTerminalId"`
-	DepPlandTime  string `json:"depPlandTime"`  // "HHMM"
-	ArrPlandTime  string `json:"arrPlandTime"`  // "HHMM"
-	Operator      string `json:"busOperatorNm"`
-	GradeNm       string `json:"gradeNm"` // 우등 / 일반
+	DepPlandTime string `json:"depPlandTime"` // "YYYYMMDDHHMM"
+	ArrPlandTime string `json:"arrPlandTime"` // "YYYYMMDDHHMM"
+	GradeNm      string `json:"gradeNm"`      // 우등 / 일반 / 프리미엄
 }
 
-// ParseExpressBusSchedules converts raw schedule items into (Route, Schedule) pairs.
-// The caller is responsible for resolving terminal codes to IDs before saving.
+// ExpressBusSchedule is one departure on a known dep→arr route.
+// The caller already knows DepCode / ArrCode from the query params.
 type ExpressBusSchedule struct {
-	DepCode   string
-	ArrCode   string
-	DepMins   int
-	ArrMins   int
-	Operator  string
+	DepMins  int
+	ArrMins  int
+	Operator string // gradeNm (우등, 일반, …)
 }
 
+// ParseExpressBusSchedules parses schedule items for a single dep→arr terminal pair.
 func ParseExpressBusSchedules(items json.RawMessage) ([]ExpressBusSchedule, error) {
 	var raw struct {
 		Item []expressBusScheduleItem `json:"item"`
@@ -91,20 +123,18 @@ func ParseExpressBusSchedules(items json.RawMessage) ([]ExpressBusSchedule, erro
 
 	out := make([]ExpressBusSchedule, 0, len(raw.Item))
 	for _, it := range raw.Item {
-		dep, err := hhmm(it.DepPlandTime)
+		dep, err := yyyymmddhhmm(it.DepPlandTime)
 		if err != nil {
 			continue
 		}
-		arr, err := hhmm(it.ArrPlandTime)
+		arr, err := yyyymmddhhmm(it.ArrPlandTime)
 		if err != nil {
 			continue
 		}
 		out = append(out, ExpressBusSchedule{
-			DepCode:  it.DepTerminalID,
-			ArrCode:  it.ArrTerminalID,
 			DepMins:  dep,
 			ArrMins:  arr,
-			Operator: it.Operator,
+			Operator: it.GradeNm,
 		})
 	}
 	return out, nil

@@ -7,16 +7,23 @@ import (
 	"github.com/sptraffic/backend/internal/domain"
 )
 
-// NOTE: Field names are based on the "시외버스 운행정보 조회서비스"
-// (SuburbsBusInfoService). Adjust after live API testing.
+// Intercity bus (시외버스) parsers.
+// Endpoint base: https://apis.data.go.kr/1613000/SuburbsBusInfoService
+//
+// Terminal list:  GET /getSttnList
+// Schedule:       GET /getAlocFndSuberbsBusInfo  (requires depTerminalId + arrTerminalId)
+//
+// NOTE: Field names follow the TAGO SuburbsBusInfoService spec.
+// Verify gpslati/gpslong casing against live responses — TAGO bus-stop APIs
+// use lowercase (gpslati, gpslong); the intercity terminal list may differ.
 
 type intercityTerminalItem struct {
 	TerminalID string  `json:"terminalId"`
 	TerminalNm string  `json:"terminalNm"`
 	CityCode   string  `json:"cityCode"`
-	Do         string  `json:"do"`
-	GpslntX    float64 `json:"gpslntX,string"` // longitude
-	GpslntY    float64 `json:"gpslntY,string"` // latitude
+	CityNm     string  `json:"cityNm"`
+	Gpslati    float64 `json:"gpslati,string"` // WGS84 latitude
+	Gpslong    float64 `json:"gpslong,string"` // WGS84 longitude
 }
 
 // ParseIntercityTerminals parses 시외버스 terminal items.
@@ -36,37 +43,36 @@ func ParseIntercityTerminals(items json.RawMessage) ([]domain.Terminal, error) {
 
 	out := make([]domain.Terminal, 0, len(raw.Item))
 	for _, it := range raw.Item {
+		if it.TerminalID == "" {
+			continue
+		}
 		out = append(out, domain.Terminal{
 			Code:       it.TerminalID,
 			Name:       strings.TrimSpace(it.TerminalNm),
 			Type:       domain.TerminalTypeBus,
 			RegionCode: it.CityCode,
-			Lat:        it.GpslntY,
-			Lon:        it.GpslntX,
+			Lat:        it.Gpslati,
+			Lon:        it.Gpslong,
 		})
 	}
 	return out, nil
 }
 
-// IntercitySchedule is the parsed form of one intercity bus departure.
+// IntercitySchedule is one departure on a known dep→arr route.
+// The caller already knows DepCode / ArrCode from the query params.
 type IntercitySchedule struct {
-	DepCode  string
-	ArrCode  string
 	DepMins  int
 	ArrMins  int
-	Operator string
+	Operator string // busGradeNm
 }
 
 type intercityScheduleItem struct {
-	DepTerminalID string `json:"depTerminalId"`
-	ArrTerminalID string `json:"arrTerminalId"`
-	DepPlandTime  string `json:"depPlandTime"`
-	ArrPlandTime  string `json:"arrPlandTime"`
-	BusGradeNm    string `json:"busGradeNm"`
-	BusOperatorNm string `json:"busOperatorNm"`
+	DepPlandTime string `json:"depPlandTime"` // "YYYYMMDDHHMM"
+	ArrPlandTime string `json:"arrPlandTime"` // "YYYYMMDDHHMM"
+	BusGradeNm   string `json:"busGradeNm"`   // 직행, 완행, 고속형, …
 }
 
-// ParseIntercitySchedules parses 시외버스 schedule items.
+// ParseIntercitySchedules parses 시외버스 schedule items for a single dep→arr pair.
 func ParseIntercitySchedules(items json.RawMessage) ([]IntercitySchedule, error) {
 	var raw struct {
 		Item []intercityScheduleItem `json:"item"`
@@ -83,20 +89,18 @@ func ParseIntercitySchedules(items json.RawMessage) ([]IntercitySchedule, error)
 
 	out := make([]IntercitySchedule, 0, len(raw.Item))
 	for _, it := range raw.Item {
-		dep, err := hhmm(it.DepPlandTime)
+		dep, err := yyyymmddhhmm(it.DepPlandTime)
 		if err != nil {
 			continue
 		}
-		arr, err := hhmm(it.ArrPlandTime)
+		arr, err := yyyymmddhhmm(it.ArrPlandTime)
 		if err != nil {
 			continue
 		}
 		out = append(out, IntercitySchedule{
-			DepCode:  it.DepTerminalID,
-			ArrCode:  it.ArrTerminalID,
 			DepMins:  dep,
 			ArrMins:  arr,
-			Operator: it.BusOperatorNm,
+			Operator: it.BusGradeNm,
 		})
 	}
 	return out, nil

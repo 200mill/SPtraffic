@@ -23,3 +23,12 @@ func hhmm(s string) (int, error) {
 	}
 	return h*60 + m, nil
 }
+
+// yyyymmddhhmm parses a "YYYYMMDDHHMM" (12-char) timestamp into minutes since midnight.
+// Used by the TAGO express bus API where depPlandTime / arrPlandTime are "202404121430".
+func yyyymmddhhmm(s string) (int, error) {
+	if len(s) < 12 {
+		return 0, fmt.Errorf("invalid YYYYMMDDHHMM %q", s)
+	}
+	return hhmm(s[8:12])
+}
