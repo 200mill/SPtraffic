@@ -1,0 +1,16 @@
+# Build output
+server
+
+# Development files
+.env
+*.env.*
+
+# IDE / OS
+.idea/
+.vscode/
+*.DS_Store
+Thumbs.db
+
+# Test artifacts
+*.test
+coverage.out

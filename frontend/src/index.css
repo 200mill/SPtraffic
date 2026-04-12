@@ -1,0 +1,19 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Leaflet needs explicit height on the map container */
+.leaflet-container {
+  height: 100%;
+  width: 100%;
+}
+
+/* Smooth popup content */
+.leaflet-popup-content {
+  margin: 10px 14px;
+}
+
+/* Hide Leaflet's default focus outline on tiles */
+.leaflet-tile:focus {
+  outline: none;
+}

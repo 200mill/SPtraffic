@@ -1,0 +1,18 @@
+# docker-compose.override.yml — automatically merged by `docker compose up` for local development.
+# NOT used in production (run `docker compose -f docker-compose.yml up` to skip this file).
+
+services:
+
+  db:
+    # Expose DB to the host so you can connect with psql / pgAdmin / DBeaver
+    networks:
+      - external
+
+  redis:
+    # Expose Redis to the host so you can use redis-cli directly
+    networks:
+      - external
+
+  backend:
+    environment:
+      GIN_MODE: debug

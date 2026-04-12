@@ -1,0 +1,92 @@
+services:
+
+  # ── PostgreSQL ───────────────────────────────────────────────────────────────
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB:       sptraffic
+      POSTGRES_USER:     sptraffic
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-changeme}
+    ports:
+      - "${DB_PORT:-5432}:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U sptraffic"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks:
+      - internal
+
+  # ── Redis ────────────────────────────────────────────────────────────────────
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    command: redis-server --save 60 1 --loglevel warning
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    volumes:
+      - redisdata:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    networks:
+      - internal
+
+  # ── Backend ──────────────────────────────────────────────────────────────────
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    # .env is optional — harmless if the file doesn't exist
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      # These override whatever is in .env so container networking always works
+      DB_HOST:         db
+      DB_PORT:         "5432"
+      DB_NAME:         sptraffic
+      DB_USER:         sptraffic
+      DB_PASSWORD:     ${DB_PASSWORD:-changeme}
+      REDIS_ADDR:      redis:6379
+      MIGRATIONS_DIR:  ./migrations
+      SERVER_PORT:     "8080"
+    ports:
+      - "${SERVER_PORT:-8080}:8080"
+    networks:
+      - internal
+      - external
+
+  # ── Frontend ─────────────────────────────────────────────────────────────────
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    depends_on:
+      - backend
+    ports:
+      - "${FRONTEND_PORT:-3000}:80"
+    networks:
+      - external
+
+networks:
+  internal:   # DB + Redis are not exposed to the outside
+    internal: true
+  external:   # Backend + Frontend are reachable from the host
+    driver: bridge
+
+volumes:
+  pgdata:
+  redisdata:
