@@ -76,7 +76,7 @@ migrations/001–003_*.sql    — applied by db.Migrate() on startup (tracked in
 - **Daily full refresh**: ingestion truncates schedules → routes → terminals, then re-inserts. Routes without an API-provided code are inserted without ON CONFLICT handling.
 - **Transfer search** (`oneTransfer`): indexes leg-1 routes by destination ID, intersects with leg-2 origins. Min transfer wait = 30 min; max results returned = 20.
 - **Admin key** (`ADMIN_KEY` env var): if empty, admin endpoints return 403 Forbidden.
-- **data.go.kr parsers** contain placeholder field names based on the documented spec. Verify field names against live API responses before the first real ingestion run.
+- **data.go.kr parsers** use confirmed field names from the official spec (verified 2026-04-12). See dataset links in README § Data Sources.
 
 ## Environment Variables
 

@@ -193,11 +193,13 @@ SPtraffic/
 
 All data is fetched from [공공데이터포털 (data.go.kr)](https://www.data.go.kr):
 
-- **고속버스 운행정보 조회서비스** — Express bus terminals and schedules
-- **시외버스 운행정보 조회서비스** — Intercity bus terminals and schedules
-- **철도 운행정보 조회서비스** — KTX/rail stations and schedules
+| Service | Link | Dataset ID |
+|---------|------|------------|
+| 고속버스 운행정보 조회서비스 | [15098522](https://www.data.go.kr/data/15098522/openapi.do) | Express bus terminals & schedules |
+| 시외버스 운행정보 조회서비스 | [15098541](https://www.data.go.kr/data/15098541/openapi.do) | Intercity bus terminals & schedules |
+| 열차 운행정보 조회서비스 | [15098552](https://www.data.go.kr/data/15098552/openapi.do) | KTX/rail stations & schedules |
 
-An API key from data.go.kr is required. Register at https://www.data.go.kr and apply for access to the above services.
+An API key from data.go.kr is required. Register at https://www.data.go.kr and apply for access to each service above.
 
 ---
 

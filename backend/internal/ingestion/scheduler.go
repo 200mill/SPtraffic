@@ -104,6 +104,7 @@ func (s *Scheduler) RunAll(ctx context.Context) error {
 }
 
 // ─── Express Bus ─────────────────────────────────────────────────────────────
+// Dataset: https://www.data.go.kr/data/15098522/openapi.do
 // Base URL: https://apis.data.go.kr/1613000/ExpBusInfo
 
 func (s *Scheduler) fetchExpressBusTerminals(ctx context.Context) error {
@@ -133,7 +134,6 @@ func (s *Scheduler) fetchExpressBusTerminals(ctx context.Context) error {
 // The TAGO ExpBusInfo API requires both depTerminalId and arrTerminalId, so we
 // iterate all pairs. Korea has ~30–50 express bus terminals, making this feasible.
 func (s *Scheduler) fetchExpressBusSchedules(ctx context.Context, today string) error {
-	// Load all express bus terminals that were just inserted
 	allTerminals, err := s.termRepo.FindAll(ctx)
 	if err != nil {
 		return err
@@ -172,11 +172,7 @@ func (s *Scheduler) fetchExpressBusSchedules(ctx context.Context, today string) 
 				continue
 			}
 
-			// Use the grade (operator) from the first schedule as the route's operator.
-			routeOperator := ""
-			if len(schedules) > 0 {
-				routeOperator = schedules[0].Operator
-			}
+			routeOperator := schedules[0].Operator
 			routeID, err := s.routeRepo.Insert(ctx, &domain.Route{
 				Type:     domain.RouteTypeExpress,
 				OriginID: dep.ID,
@@ -207,12 +203,13 @@ func (s *Scheduler) fetchExpressBusSchedules(ctx context.Context, today string) 
 }
 
 // ─── Intercity Bus ────────────────────────────────────────────────────────────
+// Dataset: https://www.data.go.kr/data/15098541/openapi.do
 // Base URL: https://apis.data.go.kr/1613000/SuburbsBusInfoService
 
 func (s *Scheduler) fetchIntercityTerminals(ctx context.Context) error {
 	params := url.Values{"numOfRows": {"1000"}, "pageNo": {"1"}}
 	body, err := s.apiClient.Get(ctx,
-		"/1613000/SuburbsBusInfoService/getSttnList", params)
+		"/1613000/SuburbsBusInfoService/GetSuberbsBusTrminlList", params)
 	if err != nil {
 		return err
 	}
@@ -234,7 +231,7 @@ func (s *Scheduler) fetchIntercityTerminals(ctx context.Context) error {
 }
 
 // fetchIntercitySchedules iterates terminal pairs for the intercity bus API.
-// Like the express bus API, getAlocFndSuberbsBusInfo requires both dep+arr IDs.
+// GetStrtpntAlocFndSuberbsBusInfo requires both depTerminalId and arrTerminalId.
 func (s *Scheduler) fetchIntercitySchedules(ctx context.Context, today string) error {
 	allTerminals, err := s.termRepo.FindAll(ctx)
 	if err != nil {
@@ -261,7 +258,7 @@ func (s *Scheduler) fetchIntercitySchedules(ctx context.Context, today string) e
 				"pageNo":        {"1"},
 			}
 			body, err := s.apiClient.Get(ctx,
-				"/1613000/SuburbsBusInfoService/getAlocFndSuberbsBusInfo", params)
+				"/1613000/SuburbsBusInfoService/GetStrtpntAlocFndSuberbsBusInfo", params)
 			if err != nil {
 				continue
 			}
@@ -274,10 +271,7 @@ func (s *Scheduler) fetchIntercitySchedules(ctx context.Context, today string) e
 				continue
 			}
 
-			routeOperator := ""
-			if len(schedules) > 0 {
-				routeOperator = schedules[0].Operator
-			}
+			routeOperator := schedules[0].Operator
 			routeID, err := s.routeRepo.Insert(ctx, &domain.Route{
 				Type:     domain.RouteTypeIntercity,
 				OriginID: dep.ID,
@@ -308,33 +302,71 @@ func (s *Scheduler) fetchIntercitySchedules(ctx context.Context, today string) e
 }
 
 // ─── Rail ─────────────────────────────────────────────────────────────────────
+// Dataset: https://www.data.go.kr/data/15098552/openapi.do
 // Base URL: https://apis.data.go.kr/1613000/TrainInfoService
 //
-// NOTE: The KORAIL/TAGO TrainInfoService endpoint and field names below need
-// verification against a live API response. The schedule endpoint
-// getSttnToDirctTrnList may require different parameter names.
+// Station ingestion strategy:
+//   1. GetCtyCodeList → list of city codes
+//   2. GetCtyAcctoTrainSttnList?cityCode=XXX → stations per city
+//   (No "get all stations" endpoint exists in this API)
+//
+// Schedule endpoint: GetStrtpntAlocFndTrainInfo
+//   Requires depPlaceId + arrPlaceId (station node IDs, NOT names)
 
 func (s *Scheduler) fetchRailStations(ctx context.Context) error {
-	params := url.Values{"numOfRows": {"1000"}, "pageNo": {"1"}}
-	body, err := s.apiClient.Get(ctx,
-		"/1613000/TrainInfoService/getStationList", params)
+	// Step 1: get city codes
+	cityParams := url.Values{"numOfRows": {"100"}, "pageNo": {"1"}}
+	cityBody, err := s.apiClient.Get(ctx,
+		"/1613000/TrainInfoService/GetCtyCodeList", cityParams)
 	if err != nil {
-		return err
+		return fmt.Errorf("GetCtyCodeList: %w", err)
 	}
-	resp, err := client.Parse(body)
+	cityResp, err := client.Parse(cityBody)
 	if err != nil {
-		return err
+		return fmt.Errorf("parse city codes: %w", err)
 	}
-	stations, err := parser.ParseRailStations(resp.Response.Body.Items)
+	cities, err := parser.ParseRailCityCodes(cityResp.Response.Body.Items)
 	if err != nil {
-		return err
+		return fmt.Errorf("parse city codes: %w", err)
 	}
-	for i := range stations {
-		if err := s.termRepo.Upsert(ctx, &stations[i]); err != nil {
-			log.Printf("[ingestion] upsert station %s: %v", stations[i].Code, err)
+	log.Printf("[ingestion] rail: got %d city codes", len(cities))
+
+	// Step 2: for each city, fetch its stations
+	seen := make(map[string]bool)
+	total := 0
+	for _, city := range cities {
+		stParams := url.Values{
+			"cityCode":   {city.Code},
+			"numOfRows":  {"200"},
+			"pageNo":     {"1"},
+		}
+		stBody, err := s.apiClient.Get(ctx,
+			"/1613000/TrainInfoService/GetCtyAcctoTrainSttnList", stParams)
+		if err != nil {
+			log.Printf("[ingestion] rail stations city %s: %v", city.Code, err)
+			continue
+		}
+		stResp, err := client.Parse(stBody)
+		if err != nil {
+			continue // no stations for this city — normal
+		}
+		stations, err := parser.ParseRailStations(stResp.Response.Body.Items)
+		if err != nil {
+			continue
+		}
+		for i := range stations {
+			if seen[stations[i].Code] {
+				continue
+			}
+			seen[stations[i].Code] = true
+			if err := s.termRepo.Upsert(ctx, &stations[i]); err != nil {
+				log.Printf("[ingestion] upsert station %s: %v", stations[i].Code, err)
+			} else {
+				total++
+			}
 		}
 	}
-	log.Printf("[ingestion] upserted %d rail stations", len(stations))
+	log.Printf("[ingestion] upserted %d rail stations", total)
 	return nil
 }
 
@@ -357,14 +389,14 @@ func (s *Scheduler) fetchRailSchedules(ctx context.Context, today string) error 
 				continue
 			}
 			params := url.Values{
-				"depPlaceNm":   {dep.Name},
-				"arrPlaceNm":   {arr.Name},
+				"depPlaceId":   {dep.Code}, // station node ID
+				"arrPlaceId":   {arr.Code}, // station node ID
 				"depPlandTime": {today},
 				"numOfRows":    {"100"},
 				"pageNo":       {"1"},
 			}
 			body, err := s.apiClient.Get(ctx,
-				"/1613000/TrainInfoService/getSttnToDirctTrnList", params)
+				"/1613000/TrainInfoService/GetStrtpntAlocFndTrainInfo", params)
 			if err != nil {
 				continue
 			}
