@@ -122,34 +122,3 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-  # ── Deploy to server ──────────────────────────────────────────────────────────
-  # Requires a self-hosted runner on the target server. Setup (once):
-  #   github.com/200mill/SPtraffic → Settings → Actions → Runners → New self-hosted runner
-  # Requires ~/sptraffic/.env on the server with DATAGOKR_API_KEY, DB_PASSWORD, ADMIN_KEY.
-  deploy:
-    name: Deploy
-    runs-on: self-hosted
-    needs: publish
-    if: github.event_name == 'push'
-    timeout-minutes: 10
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Copy env
-        run: cp ~/sptraffic/.env .env
-
-      - name: Deploy
-        run: |
-          docker rm -f sptraffic-backend-1 sptraffic-frontend-1 2>/dev/null || true
-          docker compose -f docker-compose.prod.yml pull --quiet
-          docker compose -f docker-compose.prod.yml up -d --remove-orphans
-
-      - name: Verify health
-        run: |
-          sleep 5
-          curl -sf http://localhost:8080/health || \
-            (docker compose -f docker-compose.prod.yml logs backend --tail 30 && exit 1)
-
-      - name: Clean up old images
-        run: docker image prune -f --filter "until=1h"
