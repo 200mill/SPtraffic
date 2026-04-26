@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Instructions for CLAUDE
 * If you trying to reptivie tasks or things to explore, do not use inlcuded serve-agent, use "opencode_run". Provider is github-copilot, and Model is GPT-4o.
-* If you need debug or build, do not build in this computer, user remote server. Remote server address is 192.168.117.128, user name is "etx", password is literal "null".
+* If you need debug or build, do not build in this computer, user remote server. Remote server address is 192.168.219.113, user name is "etx", password is literal "null".
 
 ## Project Overview
 

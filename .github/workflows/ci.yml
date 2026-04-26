@@ -118,58 +118,37 @@ jobs:
           tags: ${{ steps.frontend-meta.outputs.tags }}
           labels: ${{ steps.frontend-meta.outputs.labels }}
           build-args: |
-            VITE_API_BASE_URL=${{ vars.VITE_API_BASE_URL || 'http://192.168.117.128:8080' }}
+            VITE_API_BASE_URL=${{ vars.VITE_API_BASE_URL || 'http://192.168.219.113:8080' }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
   # ── Deploy to server ──────────────────────────────────────────────────────────
-  # Requires a self-hosted runner registered on the target server.
-  # Setup (run once on 192.168.117.128 as etx):
+  # Requires a self-hosted runner on the target server. Setup (once):
   #   github.com/200mill/SPtraffic → Settings → Actions → Runners → New self-hosted runner
-  #   Follow the Linux instructions — the runner connects outbound to GitHub (no inbound ports needed).
+  # Requires ~/sptraffic/.env on the server with DATAGOKR_API_KEY, DB_PASSWORD, ADMIN_KEY.
   deploy:
     name: Deploy
     runs-on: self-hosted
     needs: publish
     if: github.event_name == 'push'
-    timeout-minutes: 5
+    timeout-minutes: 10
 
     steps:
-      - name: Pull images
-        run: |
-          docker pull --quiet ${{ env.BACKEND_IMAGE }}:latest &
-          docker pull --quiet ${{ env.FRONTEND_IMAGE }}:latest &
-          wait
+      - uses: actions/checkout@v4
 
-      - name: Restart backend
-        run: |
-          docker stop --time 3 sptraffic-backend-1 2>/dev/null || true
-          docker rm   sptraffic-backend-1 2>/dev/null || true
-          docker run -d --name sptraffic-backend-1 \
-            --network sptraffic_internal \
-            --env-file ~/sptraffic/.env \
-            -p 8080:8080 \
-            -e DB_HOST=sptraffic-db-1 \
-            -e DB_PORT=5432 \
-            -e REDIS_ADDR=sptraffic-redis-1:6379 \
-            -e MIGRATIONS_DIR=/app/migrations \
-            --restart unless-stopped \
-            ${{ env.BACKEND_IMAGE }}:latest
+      - name: Copy env
+        run: cp ~/sptraffic/.env .env
 
-      - name: Restart frontend
+      - name: Deploy
         run: |
-          docker stop --time 3 sptraffic-frontend-1 2>/dev/null || true
-          docker rm   sptraffic-frontend-1 2>/dev/null || true
-          docker run -d --name sptraffic-frontend-1 \
-            --network sptraffic_external \
-            -p 3000:80 \
-            --restart unless-stopped \
-            ${{ env.FRONTEND_IMAGE }}:latest
+          docker compose -f docker-compose.prod.yml pull --quiet
+          docker compose -f docker-compose.prod.yml up -d --remove-orphans
 
       - name: Verify health
         run: |
-          sleep 3
-          curl -sf http://localhost:8080/health || (docker logs sptraffic-backend-1 --tail 20 && exit 1)
+          sleep 5
+          curl -sf http://localhost:8080/health || \
+            (docker compose -f docker-compose.prod.yml logs backend --tail 30 && exit 1)
 
       - name: Clean up old images
         run: docker image prune -f --filter "until=1h"
