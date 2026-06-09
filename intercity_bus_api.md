@@ -1,0 +1,402 @@
+- generic [active] [ref=e1]:
+  - link "콘텐츠 바로가기" [ref=e3] [cursor=pointer]:
+    - /url: "#contents"
+  - generic [ref=e4]:
+    - banner [ref=e5]:
+      - generic [ref=e7]:
+        - list [ref=e8]:
+          - listitem [ref=e9]:
+            - img "eg(전자정부)" [ref=e10]
+            - text: 이 누리집은 대한민국 공식 전자정부 누리집입니다.
+        - generic [ref=e11]:
+          - searchbox "검색어를 입력해 주세요" [ref=e12]
+          - button "검색" [ref=e13] [cursor=pointer]
+      - generic [ref=e14]:
+        - heading "공공데이터포털" [level=1] [ref=e15]:
+          - link "공공데이터포털" [ref=e16] [cursor=pointer]:
+            - /url: /index.do
+        - generic [ref=e17]:
+          - generic [ref=e18]:
+            - generic [ref=e20]:
+              - link "로그인" [ref=e21] [cursor=pointer]:
+                - /url: javascript:window.location.href='/uim/login/loginView.do';
+              - link "회원가입" [ref=e22] [cursor=pointer]:
+                - /url: javascript:window.location.href='/uim/login/signupView.do';
+            - generic [ref=e23]:
+              - link "사이트맵" [ref=e24] [cursor=pointer]:
+                - /url: javascript:window.location.href='/cmm/cmm/siteMap.do';
+              - link "ENGLISH" [ref=e25] [cursor=pointer]:
+                - /url: /en/index.do
+          - navigation [ref=e26]:
+            - list [ref=e27]:
+              - listitem [ref=e28]:
+                - link "데이터찾기" [ref=e29] [cursor=pointer]:
+                  - /url: "#"
+              - listitem [ref=e30]:
+                - link "국가데이터맵" [ref=e31] [cursor=pointer]:
+                  - /url: "#"
+              - listitem [ref=e32]:
+                - link "데이터요청" [ref=e33] [cursor=pointer]:
+                  - /url: "#"
+              - listitem [ref=e34]:
+                - link "기업 공공데이터 문제해결 지원센터" [ref=e35] [cursor=pointer]:
+                  - /url: "#"
+                  - text: 기업 공공데이터
+                  - text: 문제해결 지원센터
+              - listitem [ref=e36]:
+                - link "데이터활용" [ref=e37] [cursor=pointer]:
+                  - /url: "#"
+              - listitem [ref=e38]:
+                - link "정보공유" [ref=e39] [cursor=pointer]:
+                  - /url: "#"
+              - listitem [ref=e40]:
+                - link "이용안내" [ref=e41] [cursor=pointer]:
+                  - /url: "#"
+    - generic [ref=e44]:
+      - generic [ref=e45]:
+        - heading "오픈API 상세" [level=2] [ref=e46]
+        - generic [ref=e47]:
+          - link "페이스북" [ref=e49] [cursor=pointer]:
+            - /url: "#"
+            - generic [ref=e50]: 페이스북
+          - button "트위터" [ref=e51] [cursor=pointer]:
+            - generic [ref=e52]: 트위터
+          - button "URL 복사" [ref=e53] [cursor=pointer]
+      - generic [ref=e54]:
+        - generic [ref=e55]:
+          - generic [ref=e56]:
+            - generic [ref=e57]: XML
+            - generic [ref=e58]: JSON
+            - paragraph [ref=e59]: 국토교통부_(TAGO)_버스정류소정보
+          - generic [ref=e60]: 정류소명, 정류소번호를 기준으로 시내버스 정류소정보를 조회하는 버스정류소조회 서비스. 제공하는 도시는 [도시코드 목록 조회] 오퍼레이션으로 검색이 가능하다.
+          - button "좋아요 선택 안함, 좋아요 선택한 사람 수 13" [ref=e61] [cursor=pointer]:
+            - generic [ref=e62]: 좋아요 선택 안함, 좋아요 선택한 사람 수
+            - text: "13"
+          - button "싫어요 선택 안함, 싫어요 선택한 사람 수 2" [ref=e63] [cursor=pointer]:
+            - generic [ref=e64]: 싫어요 선택 안함, 싫어요 선택한 사람 수
+            - text: "2"
+          - button "관심" [ref=e65] [cursor=pointer]: 관심
+          - link "활용신청" [ref=e68] [cursor=pointer]:
+            - /url: javascript:void(0)
+            - text: 활용신청
+        - generic [ref=e70]:
+          - generic [ref=e71]:
+            - generic [ref=e73]:
+              - heading "OpenAPI 정보" [level=3] [ref=e74]
+              - button " 메타데이터 다운로드" [ref=e76] [cursor=pointer]:
+                - generic [ref=e77]: 
+                - text: 메타데이터 다운로드
+              - button "오픈API 에러코드" [ref=e80] [cursor=pointer]:
+                - generic [ref=e81]: 
+                - text: 오픈API 에러코드
+            - generic [ref=e82]:
+              - link "데이터 개선요청" [ref=e83] [cursor=pointer]:
+                - /url: javascript:fn_callDataImproveReportPopup('', 'O', '15098534','uddi:62e932db-68b1-4b77-abbf-a5612d200338_202202071347', '')
+              - link "오류신고 및 문의" [ref=e84] [cursor=pointer]:
+                - /url: javascript:fn_callErrorReportPopup('', 'O', '15098534','uddi:62e932db-68b1-4b77-abbf-a5612d200338_202202071347', '');
+          - table "국토교통부_(TAGO)_버스정류소정보로 오픈 API 정보 표로 분류체계, 제공기관 등 정보를 나타냄" [ref=e85]:
+            - caption: 국토교통부_(TAGO)_버스정류소정보로 오픈 API 정보 표로 분류체계, 제공기관 등 정보를 나타냄
+            - rowgroup [ref=e86]:
+              - row "분류체계 교통및물류 - 물류등기타 제공기관 국토교통부" [ref=e87]:
+                - rowheader "분류체계" [ref=e88]
+                - cell "교통및물류 - 물류등기타" [ref=e89]
+                - rowheader "제공기관" [ref=e90]
+                - cell "국토교통부" [ref=e91]:
+                  - link "국토교통부" [ref=e92] [cursor=pointer]:
+                    - /url: /tcs/dss/selectDataSetList.do?dType=&keyword=&org=국토교통부&orgFilter=국토교통부&orgFullName=국토교통부&conditionType=search
+              - row "관리부서명 모빌리티총괄과 관리부서 전화번호 054-459-7906" [ref=e93]:
+                - rowheader "관리부서명" [ref=e94]
+                - cell "모빌리티총괄과" [ref=e95]
+                - rowheader "관리부서 전화번호" [ref=e96]
+                - cell "054-459-7906" [ref=e97]:
+                  - strong [ref=e98]: 054-459-7906
+              - row "API 유형 REST 데이터포맷 JSON+XML" [ref=e99]:
+                - rowheader "API 유형" [ref=e100]
+                - cell "REST" [ref=e101]
+                - rowheader "데이터포맷" [ref=e102]
+                - cell "JSON+XML" [ref=e103]
+              - row "활용신청 3497 키워드 버스정류소,버스정류장,정류장정보" [ref=e104]:
+                - rowheader "활용신청" [ref=e105]
+                - cell "3497" [ref=e106]
+                - rowheader "키워드" [ref=e107]
+                - cell "버스정류소,버스정류장,정류장정보" [ref=e108]
+              - row "등록일 2022-01-24 수정일 2023-07-12" [ref=e109]:
+                - rowheader "등록일" [ref=e110]
+                - cell "2022-01-24" [ref=e111]
+                - rowheader "수정일" [ref=e112]
+                - cell "2023-07-12" [ref=e113]
+              - 'row "비용부과유무 무료 신청가능 트래픽 개발계정 : 10,000 / 운영계정 : 활용사례 등록시 신청하면 트래픽 증가 가능" [ref=e114]':
+                - rowheader "비용부과유무" [ref=e115]
+                - cell "무료" [ref=e116]
+                - rowheader "신청가능 트래픽" [ref=e117]
+                - 'cell "개발계정 : 10,000 / 운영계정 : 활용사례 등록시 신청하면 트래픽 증가 가능" [ref=e118]'
+              - 'row "업데이트 주기 실시간 심의유형 개발단계 : 자동승인 / 운영단계 : 자동승인" [ref=e119]':
+                - rowheader "업데이트 주기" [ref=e120]
+                - cell "실시간" [ref=e121]
+                - rowheader "심의유형" [ref=e122]
+                - 'cell "개발단계 : 자동승인 / 운영단계 : 자동승인" [ref=e123]'
+              - row "공간범위 시간범위" [ref=e124]:
+                - columnheader "공간범위" [ref=e125]
+                - cell [ref=e126]
+                - columnheader "시간범위" [ref=e127]
+                - cell [ref=e128]
+              - row "이용허락범위 이용허락범위 제한 없음" [ref=e129]:
+                - rowheader "이용허락범위" [ref=e130]
+                - cell "이용허락범위 제한 없음" [ref=e131]:
+                  - link "이용허락범위 제한 없음" [ref=e133] [cursor=pointer]:
+                    - /url: /ugs/selectPortalPolicyView.do
+              - row "참고문서 오픈API활용가이드_국토교통부(TAGO)_버스정류소정보v1.0.docx" [ref=e134]:
+                - rowheader "참고문서" [ref=e135]
+                - cell "오픈API활용가이드_국토교통부(TAGO)_버스정류소정보v1.0.docx" [ref=e136]:
+                  - link "오픈API활용가이드_국토교통부(TAGO)_버스정류소정보v1.0.docx" [ref=e137] [cursor=pointer]:
+                    - /url: javascript:void(0)
+          - navigation [ref=e139]:
+            - list [ref=e140]:
+              - listitem [ref=e141]:
+                - link "상세기능" [ref=e142] [cursor=pointer]:
+                  - /url: "#tab_layer_detail_function"
+              - listitem [ref=e143]:
+                - link "활용사례" [ref=e144] [cursor=pointer]:
+                  - /url: "#tab_layer_prcuse_exam"
+              - listitem [ref=e145]:
+                - link "추천데이터" [ref=e146] [cursor=pointer]:
+                  - /url: "#tab_layer_recommend_data"
+          - generic [ref=e148]:
+            - heading "상세기능" [level=3] [ref=e149]
+            - generic [ref=e151]:
+              - generic [ref=e152] [cursor=pointer]: 목록
+              - combobox "목록 목록" [ref=e153]:
+                - option "좌표기반근접정류소 목록조회" [selected]
+                - option "정류소번호 목록조회"
+                - option "정류소별경유노선 목록조회"
+                - option "도시코드 목록 조회"
+              - button "조회" [ref=e154] [cursor=pointer]
+            - generic [ref=e155]:
+              - heading "GPS좌표를 기반으로 근처(반경 500m)에 있는 정류장을 검색한다." [level=4] [ref=e156]
+              - generic [ref=e157]:
+                - list [ref=e158]:
+                  - listitem [ref=e159]:
+                    - strong [ref=e160]: 활용승인 절차
+                    - text: "개발단계 : 자동승인 / 운영단계 : 자동승인"
+                  - listitem [ref=e161]:
+                    - strong [ref=e162]: 신청가능 트래픽
+                    - text: "개발계정 : 10,000 / 운영계정 : 활용사례 등록시 신청하면 트래픽 증가 가능"
+                  - listitem [ref=e163]:
+                    - strong [ref=e164]: 요청주소
+                    - text: http://apis.data.go.kr/1613000/BusSttnInfoInqireService/getCrdntPrxmtSttnList
+                  - listitem [ref=e165]:
+                    - strong [ref=e166]: 서비스URL
+                    - text: http://apis.data.go.kr/1613000/BusSttnInfoInqireService
+                - link "활용신청" [ref=e168] [cursor=pointer]:
+                  - /url: javascript:void(0)
+                  - text: 활용신청
+              - heading "요청변수(Request Parameter)" [level=4] [ref=e170]
+              - table "항목명(국문),항목명(영문),항목크기,항목구분,샘플데이터,항목설명 항목을 가진 요청변수(Request Parameter)표 입니다." [ref=e172]:
+                - caption: 항목명(국문),항목명(영문),항목크기,항목구분,샘플데이터,항목설명 항목을 가진 요청변수(Request Parameter)표 입니다.
+                - rowgroup [ref=e180]:
+                  - row "항목명(국문) 항목명(영문) 항목크기 항목구분 샘플데이터 항목설명" [ref=e181]:
+                    - columnheader "항목명(국문)" [ref=e182]
+                    - columnheader "항목명(영문)" [ref=e183]
+                    - columnheader "항목크기" [ref=e184]
+                    - columnheader "항목구분" [ref=e185]
+                    - columnheader "샘플데이터" [ref=e186]
+                    - columnheader "항목설명" [ref=e187]
+                - rowgroup [ref=e188]:
+                  - row "서비스키 serviceKey 4 필 - 공공데이터포털에서 받은 인증키" [ref=e189]:
+                    - cell "서비스키" [ref=e190]
+                    - cell "serviceKey" [ref=e191]
+                    - cell "4" [ref=e192]
+                    - cell "필" [ref=e193]
+                    - cell "-" [ref=e194]
+                    - cell "공공데이터포털에서 받은 인증키" [ref=e195]
+                  - row "페이지 번호 pageNo 4 옵 1 페이지번호" [ref=e196]:
+                    - cell "페이지 번호" [ref=e197]
+                    - cell "pageNo" [ref=e198]
+                    - cell "4" [ref=e199]
+                    - cell "옵" [ref=e200]
+                    - cell "1" [ref=e201]
+                    - cell "페이지번호" [ref=e202]
+                  - row "한 페이지 결과 수 numOfRows 4 옵 10 한 페이지 결과 수" [ref=e203]:
+                    - cell "한 페이지 결과 수" [ref=e204]
+                    - cell "numOfRows" [ref=e205]
+                    - cell "4" [ref=e206]
+                    - cell "옵" [ref=e207]
+                    - cell "10" [ref=e208]
+                    - cell "한 페이지 결과 수" [ref=e209]
+                  - row "데이터 타입 _type 10 옵 xml 데이터 타입(xml, json)" [ref=e210]:
+                    - cell "데이터 타입" [ref=e211]
+                    - cell "_type" [ref=e212]
+                    - cell "10" [ref=e213]
+                    - cell "옵" [ref=e214]
+                    - cell "xml" [ref=e215]
+                    - cell "데이터 타입(xml, json)" [ref=e216]
+                  - row "GPS Y좌표 gpsLati 20 필 36.3 WGS84 위도 좌표" [ref=e217]:
+                    - cell "GPS Y좌표" [ref=e218]
+                    - cell "gpsLati" [ref=e219]
+                    - cell "20" [ref=e220]
+                    - cell "필" [ref=e221]
+                    - cell "36.3" [ref=e222]
+                    - cell "WGS84 위도 좌표" [ref=e223]
+                  - row "GPS X좌표 gpsLong 20 필 127.3 WGS84 경도 좌표" [ref=e224]:
+                    - cell "GPS X좌표" [ref=e225]
+                    - cell "gpsLong" [ref=e226]
+                    - cell "20" [ref=e227]
+                    - cell "필" [ref=e228]
+                    - cell "127.3" [ref=e229]
+                    - cell "WGS84 경도 좌표" [ref=e230]
+              - heading "출력결과(Response Element)" [level=4] [ref=e231]
+              - table "항목명(국문),항목명(영문),항목크기,항목구분,샘플데이터,항목설명 항목을 가진 출력결과(Response Element)표 입니다." [ref=e233]:
+                - caption: 항목명(국문),항목명(영문),항목크기,항목구분,샘플데이터,항목설명 항목을 가진 출력결과(Response Element)표 입니다.
+                - rowgroup [ref=e241]:
+                  - row "항목명(국문) 항목명(영문) 항목크기 항목구분 샘플데이터 항목설명" [ref=e242]:
+                    - columnheader "항목명(국문)" [ref=e243]
+                    - columnheader "항목명(영문)" [ref=e244]
+                    - columnheader "항목크기" [ref=e245]
+                    - columnheader "항목구분" [ref=e246]
+                    - columnheader "샘플데이터" [ref=e247]
+                    - columnheader "항목설명" [ref=e248]
+                - rowgroup [ref=e249]:
+                  - row "결과코드 resultCode 2 필 00 결과코드" [ref=e250]:
+                    - cell "결과코드" [ref=e251]
+                    - cell "resultCode" [ref=e252]
+                    - cell "2" [ref=e253]
+                    - cell "필" [ref=e254]
+                    - cell "00" [ref=e255]
+                    - cell "결과코드" [ref=e256]
+                  - row "결과메시지 resultMsg 50 필 OK 결과메시지" [ref=e257]:
+                    - cell "결과메시지" [ref=e258]
+                    - cell "resultMsg" [ref=e259]
+                    - cell "50" [ref=e260]
+                    - cell "필" [ref=e261]
+                    - cell "OK" [ref=e262]
+                    - cell "결과메시지" [ref=e263]
+                  - row "한 페이지 결과 수 numOfRows 4 필 10 한 페이지 결과 수" [ref=e264]:
+                    - cell "한 페이지 결과 수" [ref=e265]
+                    - cell "numOfRows" [ref=e266]
+                    - cell "4" [ref=e267]
+                    - cell "필" [ref=e268]
+                    - cell "10" [ref=e269]
+                    - cell "한 페이지 결과 수" [ref=e270]
+                  - row "페이지 번호 pageNo 4 필 1 페이지번호" [ref=e271]:
+                    - cell "페이지 번호" [ref=e272]
+                    - cell "pageNo" [ref=e273]
+                    - cell "4" [ref=e274]
+                    - cell "필" [ref=e275]
+                    - cell "1" [ref=e276]
+                    - cell "페이지번호" [ref=e277]
+                  - row "전체 결과 수 totalCount 4 필 3 전체 결과 수" [ref=e278]:
+                    - cell "전체 결과 수" [ref=e279]
+                    - cell "totalCount" [ref=e280]
+                    - cell "4" [ref=e281]
+                    - cell "필" [ref=e282]
+                    - cell "3" [ref=e283]
+                    - cell "전체 결과 수" [ref=e284]
+                  - row "정류소 Y좌표 gpslati 20 필 36.293125 WGS84 위도 좌표" [ref=e285]:
+                    - cell "정류소 Y좌표" [ref=e286]
+                    - cell "gpslati" [ref=e287]
+                    - cell "20" [ref=e288]
+                    - cell "필" [ref=e289]
+                    - cell "36.293125" [ref=e290]
+                    - cell "WGS84 위도 좌표" [ref=e291]
+                  - row "정류소 X좌표 gpslong 20 필 127.30067 WGS84 경도 좌표" [ref=e292]:
+                    - cell "정류소 X좌표" [ref=e293]
+                    - cell "gpslong" [ref=e294]
+                    - cell "20" [ref=e295]
+                    - cell "필" [ref=e296]
+                    - cell "127.30067" [ref=e297]
+                    - cell "WGS84 경도 좌표" [ref=e298]
+                  - row "정류소ID nodeid 30 필 DJB8002011 정류소ID" [ref=e299]:
+                    - cell "정류소ID" [ref=e300]
+                    - cell "nodeid" [ref=e301]
+                    - cell "30" [ref=e302]
+                    - cell "필" [ref=e303]
+                    - cell "DJB8002011" [ref=e304]
+                    - cell "정류소ID" [ref=e305]
+                  - row "정류소명 nodenm 30 필 성북3통 정류소명" [ref=e306]:
+                    - cell "정류소명" [ref=e307]
+                    - cell "nodenm" [ref=e308]
+                    - cell "30" [ref=e309]
+                    - cell "필" [ref=e310]
+                    - cell "성북3통" [ref=e311]
+                    - cell "정류소명" [ref=e312]
+                  - row "도시코드 citycode 5 필 25 도시코드" [ref=e313]:
+                    - cell "도시코드" [ref=e314]
+                    - cell "citycode" [ref=e315]
+                    - cell "5" [ref=e316]
+                    - cell "필" [ref=e317]
+                    - cell "25" [ref=e318]
+                    - cell "도시코드" [ref=e319]
+              - heading "샘플코드" [level=4] [ref=e320]
+              - generic [ref=e322]:
+                - button "Java" [ref=e323] [cursor=pointer]
+                - button "Javascript" [ref=e324] [cursor=pointer]
+                - button "C#" [ref=e325] [cursor=pointer]
+                - button "PHP" [ref=e326] [cursor=pointer]
+                - button "Curl" [ref=e327] [cursor=pointer]
+                - button "Objective-C" [ref=e328] [cursor=pointer]
+                - button "Python" [ref=e329] [cursor=pointer]
+                - button "Nodejs" [ref=e330] [cursor=pointer]
+                - button "R" [ref=e331] [cursor=pointer]
+        - text:  
+        - link "목록" [ref=e333] [cursor=pointer]:
+          - /url: javascript:void(0)
+    - complementary [ref=e334]:
+      - link "상단가기" [ref=e335] [cursor=pointer]:
+        - /url: "#top"
+    - contentinfo [ref=e336]:
+      - generic [ref=e337]:
+        - generic [ref=e338]:
+          - generic [ref=e339]:
+            - strong [ref=e341]: 공공데이터 개방문의
+            - link "1566-0025" [ref=e342] [cursor=pointer]:
+              - /url: tel:1566-0025
+          - link "운영자 메일상담" [ref=e344] [cursor=pointer]:
+            - /url: mailto:opendata_help@nia.or.kr
+            - text: 운영자 메일상담
+          - generic [ref=e346]:
+            - link "페이스북 공유" [ref=e347] [cursor=pointer]:
+              - /url: http://www.facebook.com/koreadataportal
+              - generic [ref=e348]: 페이스북 공유
+            - link "트위터 공유" [ref=e349] [cursor=pointer]:
+              - /url: https://twitter.com/koreadataportal
+              - generic [ref=e350]: 트위터 공유
+            - link "블로그 공유" [ref=e351] [cursor=pointer]:
+              - /url: http://blog.naver.com/nia_korea
+              - generic [ref=e352]: 블로그 공유
+        - generic [ref=e353]:
+          - list [ref=e354]:
+            - listitem [ref=e355]:
+              - link "이용약관" [ref=e356] [cursor=pointer]:
+                - /url: /ugs/selectPortalPolicyView.do#use_stplat
+            - listitem [ref=e357]:
+              - link "개인정보처리방침" [ref=e358] [cursor=pointer]:
+                - /url: /ugs/selectPortalPolicyView.do#indvdlinfo_process
+            - listitem [ref=e359]:
+              - link "공공데이터포털 소개" [ref=e360] [cursor=pointer]:
+                - /url: /ugs/selectPortalInfoView.do#portal_info
+            - listitem [ref=e361]:
+              - link "분쟁조정신청" [ref=e362] [cursor=pointer]:
+                - /url: /tcs/dor/insertTrublMdatReqstProcssView.do
+          - generic [ref=e363]:
+            - combobox "관련사이트 선택" [ref=e364]:
+              - option "행정안전부" [selected]
+              - option "공공데이터전략위원회"
+              - option "공공데이터분쟁조정위원회"
+              - option "오픈데이터포럼"
+              - option "오픈스퀘어-D"
+            - button "이동" [ref=e365] [cursor=pointer]
+        - generic:
+          - link "행정안전부" [ref=e367] [cursor=pointer]:
+            - /url: https://www.mois.go.kr/
+            - img "행정안전부" [ref=e368]
+          - generic [ref=e369]:
+            - generic [ref=e370]:
+              - paragraph [ref=e371]: (30112) 세종특별자치시 도움6로 42(어진동)
+              - paragraph [ref=e372]:
+                - text: "대표번호 :"
+                - link "1566-0025" [ref=e373] [cursor=pointer]:
+                  - /url: tel:1566-0025
+              - paragraph [ref=e374]: "문의시간 : 09:00~18:00 (월~금)"
+            - paragraph [ref=e376]: ⓒ행정안전부. All rights reserved.
+  - log [ref=e377]:
+    - generic [ref=e378]: 이용안내 페이지로 이동

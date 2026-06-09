@@ -100,6 +100,16 @@ func (s *Scheduler) RunAll(ctx context.Context) error {
 		log.Printf("[ingestion] rail schedules error: %v", err)
 	}
 
+	log.Println("[ingestion] fetching metro stations")
+	if err := s.fetchMetroStations(ctx); err != nil {
+		log.Printf("[ingestion] metro stations error: %v", err)
+	}
+
+	log.Println("[ingestion] fetching metro schedules")
+	if err := s.fetchMetroSchedules(ctx, today); err != nil {
+		log.Printf("[ingestion] metro schedules error: %v", err)
+	}
+
 	return nil
 }
 
@@ -436,6 +446,142 @@ func (s *Scheduler) fetchRailSchedules(ctx context.Context, today string) error 
 		}
 	}
 	log.Printf("[ingestion] inserted %d rail schedules", total)
+	return nil
+}
+
+// ─── Metro ───────────────────────────────────────────────────────────────────
+// Dataset: https://www.data.go.kr/data/15098598/openapi.do
+// Base URL: https://apis.data.go.kr/1613000/SubwayInfoService
+//
+// Station ingestion strategy (mirrors rail):
+//   1. getCtyCodeList → list of city codes
+//   2. getCtyAcctoSubwaySttnList?cityCode=XXX → stations per city
+//
+// Schedule endpoint: getStrtpntAlocFndSubwayInfo
+//   Requires depPlaceId + arrPlaceId (station IDs)
+
+func (s *Scheduler) fetchMetroStations(ctx context.Context) error {
+	cityParams := url.Values{"numOfRows": {"100"}, "pageNo": {"1"}}
+	cityBody, err := s.apiClient.Get(ctx,
+		"/1613000/SubwayInfoService/getCtyCodeList", cityParams)
+	if err != nil {
+		return fmt.Errorf("metro getCtyCodeList: %w", err)
+	}
+	cityResp, err := client.Parse(cityBody)
+	if err != nil {
+		return fmt.Errorf("metro parse city codes: %w", err)
+	}
+	// Reuse rail city code parser — same field names (citycode / cityname)
+	cities, err := parser.ParseRailCityCodes(cityResp.Response.Body.Items)
+	if err != nil {
+		return fmt.Errorf("metro parse city codes: %w", err)
+	}
+	log.Printf("[ingestion] metro: got %d city codes", len(cities))
+
+	seen := make(map[string]bool)
+	total := 0
+	for _, city := range cities {
+		stParams := url.Values{
+			"cityCode":  {city.Code},
+			"numOfRows": {"500"},
+			"pageNo":    {"1"},
+		}
+		stBody, err := s.apiClient.Get(ctx,
+			"/1613000/SubwayInfoService/getCtyAcctoSubwaySttnList", stParams)
+		if err != nil {
+			log.Printf("[ingestion] metro stations city %s: %v", city.Code, err)
+			continue
+		}
+		stResp, err := client.Parse(stBody)
+		if err != nil {
+			continue
+		}
+		stations, err := parser.ParseMetroStations(stResp.Response.Body.Items)
+		if err != nil {
+			continue
+		}
+		for i := range stations {
+			if seen[stations[i].Code] {
+				continue
+			}
+			seen[stations[i].Code] = true
+			if err := s.termRepo.Upsert(ctx, &stations[i]); err != nil {
+				log.Printf("[ingestion] upsert metro station %s: %v", stations[i].Code, err)
+			} else {
+				total++
+			}
+		}
+	}
+	log.Printf("[ingestion] upserted %d metro stations", total)
+	return nil
+}
+
+func (s *Scheduler) fetchMetroSchedules(ctx context.Context, today string) error {
+	allTerminals, err := s.termRepo.FindAll(ctx)
+	if err != nil {
+		return err
+	}
+	var metroStations []domain.Terminal
+	for _, t := range allTerminals {
+		if t.Type == domain.TerminalTypeMetro {
+			metroStations = append(metroStations, t)
+		}
+	}
+
+	total := 0
+	for _, dep := range metroStations {
+		for _, arr := range metroStations {
+			if dep.ID == arr.ID {
+				continue
+			}
+			params := url.Values{
+				"depPlaceId":   {dep.Code},
+				"arrPlaceId":   {arr.Code},
+				"depPlandTime": {today},
+				"numOfRows":    {"100"},
+				"pageNo":       {"1"},
+			}
+			body, err := s.apiClient.Get(ctx,
+				"/1613000/SubwayInfoService/getStrtpntAlocFndSubwayInfo", params)
+			if err != nil {
+				continue
+			}
+			resp, err := client.Parse(body)
+			if err != nil {
+				continue
+			}
+			schedules, err := parser.ParseMetroSchedules(resp.Response.Body.Items)
+			if err != nil || len(schedules) == 0 {
+				continue
+			}
+
+			for _, sc := range schedules {
+				routeID, err := s.routeRepo.Insert(ctx, &domain.Route{
+					Code:     sc.TrainNo,
+					Type:     domain.RouteTypeMetro,
+					OriginID: dep.ID,
+					DestID:   arr.ID,
+					Operator: sc.LineNm,
+				})
+				if err != nil {
+					continue
+				}
+				dur := sc.ArrMins - sc.DepMins
+				if dur < 0 {
+					dur += 24 * 60
+				}
+				_ = s.schedRepo.Insert(ctx, &domain.Schedule{
+					RouteID:       routeID,
+					DepartureMins: sc.DepMins,
+					ArrivalMins:   sc.ArrMins,
+					DurationMin:   dur,
+					DaysOfWeek:    127,
+				})
+			}
+			total += len(schedules)
+		}
+	}
+	log.Printf("[ingestion] inserted %d metro schedules", total)
 	return nil
 }
 

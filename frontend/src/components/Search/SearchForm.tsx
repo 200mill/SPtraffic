@@ -73,6 +73,7 @@ export function SearchForm() {
             <option value="all">전체</option>
             <option value="bus">버스만</option>
             <option value="rail">철도만</option>
+            <option value="metro">지하철만</option>
           </select>
         </div>
 

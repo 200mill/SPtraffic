@@ -7,11 +7,18 @@ import (
 )
 
 type Config struct {
-	Server   ServerConfig
-	DB       DBConfig
-	Redis    RedisConfig
-	DataGokr DataGokrConfig
-	Admin    AdminConfig
+	Server     ServerConfig
+	DB         DBConfig
+	Redis      RedisConfig
+	DataGokr   DataGokrConfig
+	Admin      AdminConfig
+	SeoulMetro SeoulMetroConfig
+}
+
+// SeoulMetroConfig holds credentials for the Seoul Open Data Plaza real-time API.
+// Key is empty when real-time metro arrivals are disabled.
+type SeoulMetroConfig struct {
+	Key string
 }
 
 type ServerConfig struct {
@@ -73,6 +80,7 @@ func Load() *Config {
 	viper.SetDefault("REDIS_ADDR", "localhost:6379")
 	viper.SetDefault("DATAGOKR_API_KEY", "")
 	viper.SetDefault("ADMIN_KEY", "")
+	viper.SetDefault("SEOUL_METRO_KEY", "")
 
 	return &Config{
 		Server: ServerConfig{
@@ -95,6 +103,9 @@ func Load() *Config {
 		},
 		Admin: AdminConfig{
 			Key: viper.GetString("ADMIN_KEY"),
+		},
+		SeoulMetro: SeoulMetroConfig{
+			Key: viper.GetString("SEOUL_METRO_KEY"),
 		},
 	}
 }

@@ -4,8 +4,9 @@ package domain
 type TerminalType string
 
 const (
-	TerminalTypeBus  TerminalType = "bus"
-	TerminalTypeRail TerminalType = "rail"
+	TerminalTypeBus   TerminalType = "bus"
+	TerminalTypeRail  TerminalType = "rail"
+	TerminalTypeMetro TerminalType = "metro" // 도시철도/지하철
 )
 
 type Terminal struct {

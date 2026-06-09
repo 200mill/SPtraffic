@@ -21,6 +21,7 @@ func NewRouter(
 	regionH *handler.RegionHandler,
 	healthH *handler.HealthHandler,
 	adminH *handler.AdminHandler,
+	metroH *handler.MetroHandler,
 	cfg RouterConfig,
 ) *gin.Engine {
 	r := gin.New()
@@ -33,6 +34,7 @@ func NewRouter(
 		api.GET("/terminals", termH.ListTerminals)
 		api.GET("/terminals/:code", termH.GetTerminal)
 		api.GET("/terminals/:code/departures", termH.GetDepartures)
+		api.GET("/terminals/:code/realtime", metroH.GetRealtime)
 		api.GET("/search", searchH.Search)
 		api.GET("/schedule/:route_id", schedH.GetSchedule)
 		api.GET("/regions", regionH.ListRegions)

@@ -2,10 +2,18 @@ export interface Terminal {
   id: number
   code: string
   name: string
-  type: 'bus' | 'rail'
+  type: 'bus' | 'rail' | 'metro'
   regionCode: string
   lat: number
   lon: number
+}
+
+export interface RealtimeArrival {
+  line: string
+  direction: string
+  destination: string
+  arriveSecs: number
+  message: string
 }
 
 export interface Leg {
@@ -63,7 +71,7 @@ export interface SearchQuery {
   from: string        // terminal code
   to: string
   date: string        // "YYYY-MM-DDTHH:MM"
-  mode: 'all' | 'bus' | 'rail'
+  mode: 'all' | 'bus' | 'rail' | 'metro'
   maxLegs: 1 | 2 | 3
 }
 

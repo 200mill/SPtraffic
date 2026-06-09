@@ -81,8 +81,9 @@ func main() {
 	regionH := handler.NewRegionHandler(termRepo)
 	healthH := handler.NewHealthHandler(pool, cacheClient)
 	adminH := handler.NewAdminHandler(ingestFn)
+	metroH := handler.NewMetroHandler(termRepo, cacheClient, cfg.SeoulMetro.Key)
 
-	router := api.NewRouter(termH, searchH, schedH, regionH, healthH, adminH, api.RouterConfig{
+	router := api.NewRouter(termH, searchH, schedH, regionH, healthH, adminH, metroH, api.RouterConfig{
 		CORSOrigin: cfg.Server.CORSOrigin,
 		AdminKey:   cfg.Admin.Key,
 	})

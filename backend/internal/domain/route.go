@@ -7,6 +7,7 @@ const (
 	RouteTypeExpress   RouteType = "express"   // 고속버스
 	RouteTypeIntercity RouteType = "intercity" // 시외버스
 	RouteTypeRail      RouteType = "rail"      // 간선철도
+	RouteTypeMetro     RouteType = "metro"     // 도시철도/지하철
 )
 
 type Route struct {

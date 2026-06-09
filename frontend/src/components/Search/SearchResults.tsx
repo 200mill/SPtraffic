@@ -70,8 +70,8 @@ export function SearchResults({ onSelect }: Props) {
               {r.legs.map((leg, j) => (
                 <div key={j} className="flex items-center gap-1 text-xs">
                   <span className={`px-1.5 py-0.5 rounded text-white font-medium
-                    ${leg.routeType === 'rail' ? 'bg-red-500' : 'bg-blue-500'}`}>
-                    {leg.routeType === 'rail' ? '철도' : leg.routeType === 'express' ? '고속' : '시외'}
+                    ${leg.routeType === 'rail' ? 'bg-red-500' : leg.routeType === 'metro' ? 'bg-purple-500' : 'bg-blue-500'}`}>
+                    {leg.routeType === 'rail' ? '철도' : leg.routeType === 'metro' ? '지하철' : leg.routeType === 'express' ? '고속' : '시외'}
                   </span>
                   <span className="text-gray-600">{leg.from.name}</span>
                   <span className="text-gray-400">→</span>

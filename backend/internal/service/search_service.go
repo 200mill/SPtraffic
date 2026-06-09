@@ -381,6 +381,8 @@ func modeMatches(routeType domain.RouteType, mode string) bool {
 		return routeType == domain.RouteTypeExpress || routeType == domain.RouteTypeIntercity
 	case "rail":
 		return routeType == domain.RouteTypeRail
+	case "metro":
+		return routeType == domain.RouteTypeMetro
 	default: // "all"
 		return true
 	}

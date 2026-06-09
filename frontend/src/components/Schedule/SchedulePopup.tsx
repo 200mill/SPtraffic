@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { api } from '../../api/client'
 import type { DepartureInfo, Terminal } from '../../types'
 import { minsToTime } from '../../types'
+import { MetroRealtimePanel } from '../Metro/RealtimePanel'
 
 interface Props {
   terminal: Terminal
@@ -11,6 +12,7 @@ const ROUTE_TYPE_LABEL: Record<string, string> = {
   express: '고속',
   intercity: '시외',
   rail: '철도',
+  metro: '지하철',
 }
 
 /** Shows upcoming departures from a terminal. */
@@ -29,7 +31,9 @@ export function SchedulePopup({ terminal }: Props) {
       .finally(() => setLoading(false))
   }, [terminal.code])
 
-  const typeLabel = terminal.type === 'bus' ? '버스터미널' : '철도역'
+  const typeLabel =
+    terminal.type === 'bus' ? '버스터미널' :
+    terminal.type === 'metro' ? '지하철역' : '철도역'
 
   return (
     <div className="min-w-[220px] max-w-xs">
@@ -73,6 +77,12 @@ export function SchedulePopup({ terminal }: Props) {
             ))}
           </tbody>
         </table>
+      )}
+
+      {terminal.type === 'metro' && (
+        <div className="mt-3 pt-3 border-t border-gray-100">
+          <MetroRealtimePanel code={terminal.code} />
+        </div>
       )}
     </div>
   )

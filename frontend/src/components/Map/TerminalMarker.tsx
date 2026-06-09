@@ -8,13 +8,19 @@ interface Props {
   terminal: Terminal
 }
 
-/** Creates a small colored circle marker — blue for bus, red for rail. */
+/** Creates a small colored marker — blue circle (bus), red square (rail), purple diamond (metro). */
 function makeIcon(type: Terminal['type']) {
-  const color = type === 'bus' ? '#3b82f6' : '#ef4444'
+  const color = type === 'bus' ? '#3b82f6' : type === 'metro' ? '#a855f7' : '#ef4444'
+  const shape =
+    type === 'bus'
+      ? 'border-radius:50%'
+      : type === 'metro'
+        ? 'border-radius:2px;transform:rotate(45deg)'
+        : 'border-radius:2px'
   return L.divIcon({
     className: '',
     html: `<div style="
-      width:10px;height:10px;border-radius:${type === 'bus' ? '50%' : '2px'};
+      width:10px;height:10px;${shape};
       background:${color};border:2px solid white;
       box-shadow:0 1px 4px rgba(0,0,0,0.35);
     "></div>`,

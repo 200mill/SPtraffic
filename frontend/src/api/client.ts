@@ -1,4 +1,4 @@
-import type { DepartureInfo, RouteSchedule, SearchQuery, SearchResult, Terminal } from '../types'
+import type { DepartureInfo, RealtimeArrival, RouteSchedule, SearchQuery, SearchResult, Terminal } from '../types'
 
 const BASE = import.meta.env.VITE_API_BASE ?? ''
 
@@ -40,6 +40,8 @@ export const api = {
         ...(params?.after ? { after: params.after } : {}),
         ...(params?.limit !== undefined ? { limit: String(params.limit) } : {}),
       }),
+    realtime: (code: string) =>
+      get<RealtimeArrival[]>(`/api/terminals/${encodeURIComponent(code)}/realtime`),
   },
 
   search: (q: SearchQuery) =>

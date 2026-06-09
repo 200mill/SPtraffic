@@ -1,0 +1,256 @@
+- generic [active] [ref=e1]:
+  - link "콘텐츠 바로가기" [ref=e3] [cursor=pointer]:
+    - /url: "#contents"
+  - generic [ref=e4]:
+    - banner [ref=e5]:
+      - generic [ref=e7]:
+        - list [ref=e8]:
+          - listitem [ref=e9]:
+            - img "eg(전자정부)" [ref=e10]
+            - text: 이 누리집은 대한민국 공식 전자정부 누리집입니다.
+        - generic [ref=e11]:
+          - searchbox "검색어를 입력해 주세요" [ref=e12]
+          - button "검색" [ref=e13] [cursor=pointer]
+      - generic [ref=e14]:
+        - heading "공공데이터포털" [level=1] [ref=e15]:
+          - link "공공데이터포털" [ref=e16] [cursor=pointer]:
+            - /url: /index.do
+        - generic [ref=e17]:
+          - generic [ref=e18]:
+            - generic [ref=e20]:
+              - link "로그인" [ref=e21] [cursor=pointer]:
+                - /url: javascript:window.location.href='/uim/login/loginView.do';
+              - link "회원가입" [ref=e22] [cursor=pointer]:
+                - /url: javascript:window.location.href='/uim/login/signupView.do';
+            - generic [ref=e23]:
+              - link "사이트맵" [ref=e24] [cursor=pointer]:
+                - /url: javascript:window.location.href='/cmm/cmm/siteMap.do';
+              - link "ENGLISH" [ref=e25] [cursor=pointer]:
+                - /url: /en/index.do
+          - navigation [ref=e26]:
+            - list [ref=e27]:
+              - listitem [ref=e28]:
+                - link "데이터찾기" [ref=e29] [cursor=pointer]:
+                  - /url: "#"
+              - listitem [ref=e30]:
+                - link "국가데이터맵" [ref=e31] [cursor=pointer]:
+                  - /url: "#"
+              - listitem [ref=e32]:
+                - link "데이터요청" [ref=e33] [cursor=pointer]:
+                  - /url: "#"
+              - listitem [ref=e34]:
+                - link "기업 공공데이터 문제해결 지원센터" [ref=e35] [cursor=pointer]:
+                  - /url: "#"
+                  - text: 기업 공공데이터
+                  - text: 문제해결 지원센터
+              - listitem [ref=e36]:
+                - link "데이터활용" [ref=e37] [cursor=pointer]:
+                  - /url: "#"
+              - listitem [ref=e38]:
+                - link "정보공유" [ref=e39] [cursor=pointer]:
+                  - /url: "#"
+              - listitem [ref=e40]:
+                - link "이용안내" [ref=e41] [cursor=pointer]:
+                  - /url: "#"
+    - generic [ref=e44]:
+      - generic [ref=e45]:
+        - heading "오픈API 상세" [level=2] [ref=e46]
+        - generic [ref=e47]:
+          - link "페이스북" [ref=e49] [cursor=pointer]:
+            - /url: "#"
+            - generic [ref=e50]: 페이스북
+          - button "트위터" [ref=e51] [cursor=pointer]:
+            - generic [ref=e52]: 트위터
+          - button "URL 복사" [ref=e53] [cursor=pointer]
+      - generic [ref=e54]:
+        - generic [ref=e55]:
+          - generic [ref=e56]:
+            - generic [ref=e57]: XML
+            - paragraph [ref=e58]: 대전광역시_도로안전시설물 설치현황 조회
+          - generic [ref=e59]: 대전광역시 도로안전시설물 설치 현황 조회 자료는 대전시 내 주요 도로에 설치된 각종 도로안전시설물의 설치 현황을 종합적으로 제공합니다. 이 데이터는 가드레일, 방호울타리, 반사경, 차선 분리대, 안전 표지 등 다양한 안전 시설물의 종류 별 설치 위치, 좌표 정보, 설치 연도, 관리 상태 등 구체적인 세부 항목을 포함하고 있습니다. 도로별 구간 또는 자치구별로 안전시설물의 분포 및 규모, 공간적 특성 등이 체계적으로 집계되어 있어, 도로 이용자 안전 확보, 시설물 유지·보수 계획, 신규 안전 시설 도입, 교통사고 취약 지점 분석 등 다양한 분야에 적극 활용할 수 있습니다.. 2021년 공공데이터 기업매칭지원사업으로 개발되었습니다.
+          - button "좋아요 선택 안함, 좋아요 선택한 사람 수 0" [ref=e60] [cursor=pointer]:
+            - generic [ref=e61]: 좋아요 선택 안함, 좋아요 선택한 사람 수
+            - text: "0"
+          - button "싫어요 선택 안함, 싫어요 선택한 사람 수 0" [ref=e62] [cursor=pointer]:
+            - generic [ref=e63]: 싫어요 선택 안함, 싫어요 선택한 사람 수
+            - text: "0"
+          - button "관심" [ref=e64] [cursor=pointer]: 관심
+          - link "바로가기" [ref=e67] [cursor=pointer]:
+            - /url: http://bigdata.daejeon.go.kr/openApi/6300000/getDjRoadSaveFcltsInstlSttus/getDjRoadSaveFcltsInstlSttuslist?pageNo=1&numOfRows=10
+            - text: 바로가기
+        - generic [ref=e69]:
+          - generic [ref=e70]:
+            - generic [ref=e72]:
+              - heading "OpenAPI 정보" [level=3] [ref=e73]
+              - button " 메타데이터 다운로드" [ref=e75] [cursor=pointer]:
+                - generic [ref=e76]: 
+                - text: 메타데이터 다운로드
+              - button "오픈API 에러코드" [ref=e79] [cursor=pointer]:
+                - generic [ref=e80]: 
+                - text: 오픈API 에러코드
+            - generic [ref=e81]:
+              - link "데이터 개선요청" [ref=e82] [cursor=pointer]:
+                - /url: javascript:fn_callDataImproveReportPopup('', 'O', '15098144','uddi:7d23bc1d-00cd-407c-bc62-94815e7a64f4', '')
+              - link "오류신고 및 문의" [ref=e83] [cursor=pointer]:
+                - /url: javascript:fn_callErrorReportPopup('', 'O', '15098144','uddi:7d23bc1d-00cd-407c-bc62-94815e7a64f4', '');
+          - table "대전광역시_도로안전시설물 설치현황 조회로 오픈 API 정보 표로 분류체계, 제공기관 등 정보를 나타냄" [ref=e84]:
+            - caption: 대전광역시_도로안전시설물 설치현황 조회로 오픈 API 정보 표로 분류체계, 제공기관 등 정보를 나타냄
+            - rowgroup [ref=e85]:
+              - row "분류체계 산업·통상·중소기업 - 산업금융 제공기관 대전광역시" [ref=e86]:
+                - rowheader "분류체계" [ref=e87]
+                - cell "산업·통상·중소기업 - 산업금융" [ref=e88]
+                - rowheader "제공기관" [ref=e89]
+                - cell "대전광역시" [ref=e90]:
+                  - link "대전광역시" [ref=e91] [cursor=pointer]:
+                    - /url: /tcs/dss/selectDataSetList.do?dType=&keyword=&org=대전광역시&orgFilter=대전광역시&orgFullName=대전광역시&conditionType=search
+              - row "관리부서명 법무통계담당관 관리부서 전화번호 042-270-3444" [ref=e92]:
+                - rowheader "관리부서명" [ref=e93]
+                - cell "법무통계담당관" [ref=e94]
+                - rowheader "관리부서 전화번호" [ref=e95]
+                - cell "042-270-3444" [ref=e96]:
+                  - strong [ref=e97]: 042-270-3444
+              - row "API 유형 LINK 데이터포맷 XML" [ref=e98]:
+                - rowheader "API 유형" [ref=e99]
+                - cell "LINK" [ref=e100]
+                - rowheader "데이터포맷" [ref=e101]
+                - cell "XML" [ref=e102]
+              - row "활용신청 156 키워드 도로안전시설물,설치현황,공간정보,교통안전,시설물분포" [ref=e103]:
+                - rowheader "활용신청" [ref=e104]
+                - cell "156" [ref=e105]
+                - rowheader "키워드" [ref=e106]
+                - cell "도로안전시설물,설치현황,공간정보,교통안전,시설물분포" [ref=e107]
+              - row "등록일 2022-01-11 수정일 2025-07-23" [ref=e108]:
+                - rowheader "등록일" [ref=e109]
+                - cell "2022-01-11" [ref=e110]
+                - rowheader "수정일" [ref=e111]
+                - cell "2025-07-23" [ref=e112]
+              - row "URL http://bigdata.daejeon.go.kr/openApi/6300000/getDjRoadSaveFcltsInstlSttus/getDjRoadSaveFcltsInstlSttuslist?pageNo=1&numOfRows=10" [ref=e113]:
+                - rowheader "URL" [ref=e114]
+                - cell "http://bigdata.daejeon.go.kr/openApi/6300000/getDjRoadSaveFcltsInstlSttus/getDjRoadSaveFcltsInstlSttuslist?pageNo=1&numOfRows=10" [ref=e115]:
+                  - link "http://bigdata.daejeon.go.kr/openApi/6300000/getDjRoadSaveFcltsInstlSttus/getDjRoadSaveFcltsInstlSttuslist?pageNo=1&numOfRows=10" [ref=e116] [cursor=pointer]:
+                    - /url: http://bigdata.daejeon.go.kr/openApi/6300000/getDjRoadSaveFcltsInstlSttus/getDjRoadSaveFcltsInstlSttuslist?pageNo=1&numOfRows=10
+              - row "비용부과유무 무료 신청가능 트래픽 해당 기관의 정책에 따라 트래픽 수는 상이 할 수 있음" [ref=e117]:
+                - rowheader "비용부과유무" [ref=e118]
+                - cell "무료" [ref=e119]
+                - rowheader "신청가능 트래픽" [ref=e120]
+                - cell "해당 기관의 정책에 따라 트래픽 수는 상이 할 수 있음" [ref=e121]
+              - row "업데이트 주기 실시간" [ref=e122]:
+                - rowheader "업데이트 주기" [ref=e123]
+                - cell "실시간" [ref=e124]
+                - cell [ref=e125]
+              - row "공간범위 시간범위" [ref=e126]:
+                - columnheader "공간범위" [ref=e127]
+                - cell [ref=e128]
+                - columnheader "시간범위" [ref=e129]
+                - cell [ref=e130]
+              - row "이용허락범위 이용허락범위 제한 없음" [ref=e131]:
+                - rowheader "이용허락범위" [ref=e132]
+                - cell "이용허락범위 제한 없음" [ref=e133]:
+                  - link "이용허락범위 제한 없음" [ref=e135] [cursor=pointer]:
+                    - /url: /ugs/selectPortalPolicyView.do
+              - row "참고문서 오픈 API 기술문서양식_22_대전광역시 도로안전시설물 설치 현황.docx" [ref=e136]:
+                - rowheader "참고문서" [ref=e137]
+                - cell "오픈 API 기술문서양식_22_대전광역시 도로안전시설물 설치 현황.docx" [ref=e138]:
+                  - link "오픈 API 기술문서양식_22_대전광역시 도로안전시설물 설치 현황.docx" [ref=e139] [cursor=pointer]:
+                    - /url: javascript:void(0)
+        - text:  
+        - navigation [ref=e141]:
+          - list [ref=e142]:
+            - listitem [ref=e143]:
+              - link "추천데이터" [ref=e144] [cursor=pointer]:
+                - /url: "#tab_layer_recommend_data"
+        - generic [ref=e145]:
+          - generic [ref=e147]: 다른 사용자들이 활용한 데이터
+          - generic [ref=e149]:
+            - generic [ref=e150]: 로그인하셔서 다른 사용자들이 활용한 데이터를 추천받아 보세요
+            - link "로그인" [ref=e152] [cursor=pointer]:
+              - /url: /uim/login/loginView.do
+          - generic [ref=e154]: 이 데이터와 유사한 데이터
+          - generic [ref=e155]:
+            - generic [ref=e156]:
+              - generic [ref=e157]:
+                - generic [ref=e158]: 파일데이터
+                - link "다운로드" [ref=e160] [cursor=pointer]:
+                  - /url: javascript:void(0);
+              - link "대전광역시_대전광역시 도로안전시설물 설치 현황" [ref=e162] [cursor=pointer]:
+                - /url: /data/15081678/fileData.do?recommendDataYn=Y
+            - generic [ref=e163]:
+              - generic [ref=e164]:
+                - generic [ref=e165]: 파일데이터
+                - link "다운로드" [ref=e167] [cursor=pointer]:
+                  - /url: javascript:void(0);
+              - link "대전광역시_도로안전시설물 설치현황_공간정보" [ref=e169] [cursor=pointer]:
+                - /url: /data/15097266/fileData.do?recommendDataYn=Y
+            - generic [ref=e170]:
+              - generic [ref=e172]: 파일데이터
+              - link "대전광역시_안전시설물(도로시설물) 현황" [ref=e174] [cursor=pointer]:
+                - /url: /data/15110472/fileData.do?recommendDataYn=Y
+            - generic [ref=e175]:
+              - generic [ref=e177]: 오픈 API
+              - link "대전광역시_보안등조회서비스" [ref=e179] [cursor=pointer]:
+                - /url: /data/15110685/openapi.do?recommendDataYn=Y
+            - generic [ref=e180]:
+              - generic [ref=e182]: 오픈 API
+              - link "대전광역시_신호등조회서비스" [ref=e184] [cursor=pointer]:
+                - /url: /data/15110706/openapi.do?recommendDataYn=Y
+        - link "목록" [ref=e186] [cursor=pointer]:
+          - /url: javascript:void(0)
+    - complementary [ref=e187]:
+      - link "상단가기" [ref=e188] [cursor=pointer]:
+        - /url: "#top"
+    - contentinfo [ref=e189]:
+      - generic [ref=e190]:
+        - generic [ref=e191]:
+          - generic [ref=e192]:
+            - strong [ref=e194]: 공공데이터 개방문의
+            - link "1566-0025" [ref=e195] [cursor=pointer]:
+              - /url: tel:1566-0025
+          - link "운영자 메일상담" [ref=e197] [cursor=pointer]:
+            - /url: mailto:opendata_help@nia.or.kr
+            - text: 운영자 메일상담
+          - generic [ref=e199]:
+            - link "페이스북 공유" [ref=e200] [cursor=pointer]:
+              - /url: http://www.facebook.com/koreadataportal
+              - generic [ref=e201]: 페이스북 공유
+            - link "트위터 공유" [ref=e202] [cursor=pointer]:
+              - /url: https://twitter.com/koreadataportal
+              - generic [ref=e203]: 트위터 공유
+            - link "블로그 공유" [ref=e204] [cursor=pointer]:
+              - /url: http://blog.naver.com/nia_korea
+              - generic [ref=e205]: 블로그 공유
+        - generic [ref=e206]:
+          - list [ref=e207]:
+            - listitem [ref=e208]:
+              - link "이용약관" [ref=e209] [cursor=pointer]:
+                - /url: /ugs/selectPortalPolicyView.do#use_stplat
+            - listitem [ref=e210]:
+              - link "개인정보처리방침" [ref=e211] [cursor=pointer]:
+                - /url: /ugs/selectPortalPolicyView.do#indvdlinfo_process
+            - listitem [ref=e212]:
+              - link "공공데이터포털 소개" [ref=e213] [cursor=pointer]:
+                - /url: /ugs/selectPortalInfoView.do#portal_info
+            - listitem [ref=e214]:
+              - link "분쟁조정신청" [ref=e215] [cursor=pointer]:
+                - /url: /tcs/dor/insertTrublMdatReqstProcssView.do
+          - generic [ref=e216]:
+            - combobox "관련사이트 선택" [ref=e217]:
+              - option "행정안전부" [selected]
+              - option "공공데이터전략위원회"
+              - option "공공데이터분쟁조정위원회"
+              - option "오픈데이터포럼"
+              - option "오픈스퀘어-D"
+            - button "이동" [ref=e218] [cursor=pointer]
+        - generic:
+          - link "행정안전부" [ref=e220] [cursor=pointer]:
+            - /url: https://www.mois.go.kr/
+            - img "행정안전부" [ref=e221]
+          - generic [ref=e222]:
+            - generic [ref=e223]:
+              - paragraph [ref=e224]: (30112) 세종특별자치시 도움6로 42(어진동)
+              - paragraph [ref=e225]:
+                - text: "대표번호 :"
+                - link "1566-0025" [ref=e226] [cursor=pointer]:
+                  - /url: tel:1566-0025
+              - paragraph [ref=e227]: "문의시간 : 09:00~18:00 (월~금)"
+            - paragraph [ref=e229]: ⓒ행정안전부. All rights reserved.
+  - log [ref=e230]
